@@ -256,15 +256,13 @@ const OPT_TABS = [
     ['select', 'touch', _t('Contrôles tactiles'), [['auto', _t('Automatique')], ['on', _t('Activés')], ['off', _t('Désactivés')]], () => touchDetect()],
     ['select', 'tcRun', _t('Course au doigt'), [['button', _t('Bouton Courir')], ['stick', _t('Joystick poussé au-delà du cercle')]], null, 'touch'],
     ['select', 'tcStick', _t('Joystick'), [['float', _t('Apparaît sous le doigt')], ['fixed', _t('Fixe à l\u0027écran')]], null, 'touch'],
-    ['check', 'tcAuto', _t('Tir automatique (quand le réticule est sur un ennemi, la visée remplace le bouton de tir)'), null, null, 'touch'],
     ['check', 'tcDblAds', _t('Visée au double toucher (sans bouton Viser)'), null, null, 'touch'],
     ['check', 'tcQuick', _t('Tir au relâchement (fusils de précision, appuyer pour viser et relâcher pour tirer)'), null, null, 'touch'],
     ['check', 'tcVib', _t('Vibrations (touche, élimination, coup reçu)'), null, null, 'touch'],
     ['select', 'tcAlpha', _t('Opacité des boutons'), [['1', '100 %'], ['0.75', '75 %'], ['0.5', '50 %']], () => touchAlpha(), 'touch'],
     ['button', _t('Disposition des commandes tactiles'), () => touchEditOpen(), null, null, 'touch'],
     ['head', _t('Pavé tactile')], // la détection est dans 09qe-pavetactile.js ; les rangées « trackpad » n'apparaissent qu'avec le mode (body.trackpad)
-    ['select', 'tpMode', _t('Contrôles au pavé tactile (tir automatique, visée au double clic)'), [['auto', _t('Automatique')], ['on', _t('Activés')], ['off', _t('Désactivés')]], () => trackpadSync(), 'desk'],
-    ['check', 'tpAuto', _t('Tir automatique (quand le réticule est sur un ennemi, le clic ne tire plus)'), null, null, 'trackpad'],
+    ['select', 'tpMode', _t('Contrôles au pavé tactile'), [['auto', _t('Automatique')], ['on', _t('Activés')], ['off', _t('Désactivés')]], () => trackpadSync(), 'desk'],
     ['check', 'tpDblAds', _t('Visée au double clic ou au toucher à deux doigts (un autre range l\u0027arme)'), null, null, 'trackpad'],
     ['range', 'tpSens', _t('Sensibilité du pavé tactile'), 0.2, 3, 0.05, (v) => v.toFixed(2), null, 'trackpad'], // indépendante de la souris (Settings.sens) : voir 08-player.js
     ['head', _t('Visée')],
@@ -285,7 +283,7 @@ const OPT_TABS = [
     ['check', 'padVib', _t('Vibrations de la manette')],
     ['head', _t('Interface')],
     ['select', 'lang', _t('Langue'), [['auto', _t('Automatique')], ['en', 'English'], ['fr', 'Français']], langApply, 'menu'],
-    ['check', 'allyMarks', _t('Marqueurs d\u0027alliés (au-dessus de leur tête)')],
+    ['check', 'allyMarks', _t('Marqueurs de combattants (alliés verts, ennemis rouges)')],
     ['check', 'nadeArc', _t('Trajectoire des grenades (en tenant une grenade)')],
     ['select', 'hudScale', _t('Taille de l\u0027interface en jeu'), [['0.85', '85' + PCT], ['1', '100' + PCT], ['1.15', '115' + PCT], ['1.3', '130' + PCT]], null, 'desk'], // --hud-k (updateHud) ; au doigt, le HUD suit la hauteur de l'écran
     ['check', 'fsGame', _t('Plein écran en partie (au lancement d\u0027une partie, Échap reprend sans clic)')],

@@ -1,8 +1,7 @@
 /* ==========================================================================
-   MARQUEURS D'ALLIÉS
-   Reconnaître un ennemi au premier coup d'œil est difficile dans un décor chargé (Hortus : feuillage, serre, parterres) ; les
-   tenues des deux camps ne suffisent plus. Plutôt que de surligner les ennemis ou de retoucher les modèles, ce sont les alliés qui
-   se signalent, comme dans la plupart des jeux de tir par équipes : un chevron vert au-dessus de la tête, avec le nom de près. Tout
+   MARQUEURS DE COMBATTANTS
+   Reconnaître un ennemi au premier coup d'œil est difficile dans un décor chargé. Les alliés portent un chevron vert et les ennemis
+   visibles un chevron rouge ; un adversaire derrière un obstacle ne reçoit jamais de marqueur. Tout
    soldat sans marqueur est donc un adversaire, et la vue des ennemis reste naturelle (aucun contour, aucune lueur).
    - Le marqueur suit la tête (projetée à l'écran), garde une taille lisible qui diminue avec la distance (jusqu'à 120 m) et s'efface
      tout près (moins de 6 m) pour ne pas gêner la visée.
@@ -12,7 +11,7 @@
    - Éléments du HUD (#allyMarks), un par allié, créés à la demande puis réutilisés ; ils ne s'écrivent que si leur valeur change
      (hudText, hudStyle) et bougent par transformation. Appelé juste avant le rendu : la caméra a alors sa position définitive.
    ========================================================================== */
-const AM = { els: [], root: null, shown: 0, range: 120, nameRange: 32 };
+const AM = { els: [], root: null, shown: 0, range: 120, enemyRange: 95, nameRange: 32 };
 const _amP = new V3(), _amH = new V3(), _amC = new V3();
 
 /* Éléments du marqueur n° i (créés à la première demande) */
@@ -32,22 +31,25 @@ function allyMarksHide() {
 }
 function allyMarksUpdate() {
   const me = PL.ent;
-  if (!Settings.allyMarks || MATCH.mode === 'ffa' || !me.alive || (MATCH.state !== 'playing' && MATCH.state !== 'paused') || $('scope').classList.contains('on')) return allyMarksHide();
+  if (!Settings.allyMarks || !me.alive || (MATCH.state !== 'playing' && MATCH.state !== 'paused') || $('scope').classList.contains('on')) return allyMarksHide();
   camera.updateMatrixWorld();
   const W = VIEW.w, H = VIEW.h, cp = camera.position;
   const now = performance.now();
   let n = 0;
   for (const o of entities) {
-    if (o === me || !o.alive || o.off || !allied(o, me)) continue;
+    if (o === me || !o.alive || o.off) continue;
+    const friend = MATCH.mode !== 'ffa' && allied(o, me);
     const m = amEl(n++);
+    m.el.classList.toggle('enemy', !friend);
     entHead(o, _amH); _amH.y += 0.35; // au-dessus de la tête
     const d = _amH.distanceTo(cp);
     _amP.copy(_amH).project(camera);
     let a = 0;
-    if (d > 0.5 && d < AM.range && _amP.z < 1 && Math.abs(_amP.x) < 1.04 && Math.abs(_amP.y) < 1.04) {
+    if (d > 0.5 && d < (friend ? AM.range : AM.enemyRange) && _amP.z < 1 && Math.abs(_amP.x) < 1.04 && Math.abs(_amP.y) < 1.04) {
       // visibilité (tête, sinon poitrine) : testée par intervalles, la valeur reste entre deux tests
       if (o.markT === undefined || now - o.markT > 150) { o.markT = now - Math.random() * 40; o.markVis = lineClear(cp, _amH) || (entChest(o, _amC), lineClear(cp, _amC)); }
-      a = (o.markVis ? 0.9 : 0.42) * clamp((d - 3) / 3, 0, 1); // tout près : il s'efface
+      // Enemies are never revealed through cover. Allies remain faintly visible so the squad can regroup.
+      a = (friend ? (o.markVis ? 0.9 : 0.42) : (o.markVis ? 0.96 : 0)) * clamp((d - 3) / 3, 0, 1); // tout près : il s'efface
     }
     if (a <= 0) { hudStyle(m.el, 'opacity', '0'); continue; }
     const s = lerp(1, 0.62, clamp((d - 14) / 70, 0, 1)), px = Math.round((_amP.x * 0.5 + 0.5) * W), py = Math.round((-_amP.y * 0.5 + 0.5) * H);

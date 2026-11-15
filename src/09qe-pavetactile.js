@@ -3,7 +3,7 @@
    Retour d'un joueur : « je joue au Magic Trackpad, je ne peux pas viser et tirer en même temps ». Sur un pavé tactile on ne tient pas un clic en
    déplaçant le doigt, ni deux boutons à la fois. Les commandes restent celles du clavier et de la souris (déplacement, sauts, armes aux touches), mais
    quand le pavé tactile est le pointeur principal, il prend l'esprit de l'écran tactile (09qd-visee.js, 09q-tactile.js) :
-   - tir automatique (Settings.tpAuto) : on tire tout seul tant que le réticule est sur un ennemi visible, comme au doigt ; le clic ne tire plus ;
+   - tir manuel : le clic gauche tire ; aucune action de tir n'est déclenchée par l'assistance à la visée ;
    - visée au double clic ou au toucher à deux doigts (Settings.tpDblAds ; le clic droit d'un pavé) : deux clics brefs épaulent, deux autres rangent
      l'arme ; la visée est une bascule, jamais « maintenue » ;
    - l'assistance à la visée (ralentissement, accroche, suivi) s'applique comme au doigt et à la manette (Options, Jeu : « Assistance à la visée ») ;
@@ -33,13 +33,13 @@ function trackpadSync() {
   PL.held = false; PL.queued = false; if (adsToggleMode()) PL.adsWant = false; TPAD.tap = 0;
   document.body.classList.toggle('trackpad', trackpadOn());
 }
-/* Clic gauche au pavé tactile : le second clic d'un double clic épaule ou range l'arme ; le premier ne tire que sans tir automatique */
+/* Clic gauche au pavé tactile : le second clic d'un double clic épaule ou range l'arme ; le premier tire */
 function trackpadClick(e) {
   TPAD.down = true; trackpadHold();
   const dbl = Settings.tpDblAds !== false && TPAD.tap && e.timeStamp - TPAD.tap <= 380;
   TPAD.tap = dbl ? 0 : e.timeStamp;
   if (dbl) { PL.adsWant = !PL.adsWant; return; }
-  if (Settings.tpAuto === false) { PL.held = true; PL.queued = true; }
+  PL.held = true; PL.queued = true;
 }
 /* Clic droit (au pavé : toucher à deux doigts) : épauler ou ranger l'arme en bascule */
 function adsToggleClick() { PL.adsWant = !PL.adsWant; }
@@ -78,7 +78,7 @@ function trackpadSeen(v) {
 function trackpadNote() {
   if (!TPAD.note || MATCH.state !== 'playing') return;
   Settings.tpHint = true; saveSettings();
-  hudMsg(TPAD.note === 'pad' ? _t('Pavé tactile détecté. Tir automatique et double clic pour viser (Options, Jeu)') : _t('Souris détectée. Le clic gauche tire de nouveau (Options, Jeu)'), 'xp', 5);
+  hudMsg(TPAD.note === 'pad' ? _t('Pavé tactile détecté. Clic gauche pour tirer, double clic pour viser.') : _t('Souris détectée. Clic gauche pour tirer.'), 'xp', 5);
   TPAD.note = null;
 }
 /* Clic gauche tenu en mode pavé détecté : c'est une souris (au pavé, on ne tient pas le clic). Le mode s'éteint et le tir part, sans relâcher. */
@@ -95,7 +95,7 @@ function trackpadHint() {
   if (TPAD.note && Settings.tpMode === 'auto') { TPAD.note = trackpadOn() ? 'pad' : 'mouse'; trackpadNote(); return; }
   if (!trackpadOn() || Settings.tpMode !== 'auto' || Settings.tpHint) return;
   Settings.tpHint = true; saveSettings();
-  hudMsg(_t('Pavé tactile détecté. Tir automatique et double clic pour viser (Options, Jeu)'), 'xp', 5);
+  hudMsg(_t('Pavé tactile détecté. Clic gauche pour tirer, double clic pour viser.'), 'xp', 5);
 }
 addEventListener('wheel', trackpadWheel, { passive: true });
 setInterval(() => { if (TPAD.n && performance.now() - TPAD.t > 200) trackpadBurst(); }, 250); // une dernière salve, une fois le geste terminé

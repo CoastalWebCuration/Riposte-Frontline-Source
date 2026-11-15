@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 71;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -12,6 +12,7 @@
 		A00000000000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000003 /* Assets.xcassets */; };
 		A00000000000000000000004 /* dist in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000006 /* dist */; };
 		A00000000000000000000005 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B00000000000000000000007 /* WebKit.framework */; };
+		A00000000000000000000006 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000008 /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +23,7 @@
 		B00000000000000000000005 /* WARFRONT 1944.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WARFRONT 1944.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000006 /* dist */ = {isa = PBXFileReference; lastKnownFileType = folder; name = dist; path = ../dist; sourceTree = SOURCE_ROOT; };
 		B00000000000000000000007 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		B00000000000000000000008 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +55,7 @@
 				B00000000000000000000002 /* GameView.swift */,
 				B00000000000000000000003 /* Assets.xcassets */,
 				B00000000000000000000004 /* Info.plist */,
+				B00000000000000000000008 /* LaunchScreen.storyboard */,
 			);
 			path = Warfront1944;
 			sourceTree = "<group>";
@@ -119,7 +122,6 @@
 			);
 			mainGroup = C00000000000000000000001;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			productRefGroup = C00000000000000000000004 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -136,6 +138,7 @@
 			files = (
 				A00000000000000000000003 /* Assets.xcassets in Resources */,
 				A00000000000000000000004 /* dist in Resources */,
+				A00000000000000000000006 /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -183,7 +186,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = Q8C7Z69V5K;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -211,7 +214,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = Q8C7Z69V5K;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;

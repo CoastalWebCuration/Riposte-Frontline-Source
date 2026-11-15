@@ -1566,6 +1566,8 @@ body.touch .fpv-bat { right: 50%; transform: translateX(50%); } /* au doigt, le 
 .am { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; opacity: 0; transform-origin: 50% 100%; transition: opacity .18s; will-change: transform; }
 .am b { font: 700 max(var(--fs-xs), calc(16 * var(--hu)))/1 var(--hud); letter-spacing: .02em; color: var(--ally); white-space: nowrap; text-shadow: 0 0 3px rgba(0,0,0,.95), 0 1px 2px rgba(0,0,0,.95); transition: opacity .18s; }
 .am svg { display: block; width: calc(20 * var(--hu)); height: calc(15 * var(--hu)); min-width: 18px; min-height: 13px; fill: var(--ally); stroke: rgba(8,10,7,.8); stroke-width: 2.4; stroke-linejoin: round; paint-order: stroke; }
+.am.enemy b { color: var(--enemy); }
+.am.enemy svg { fill: var(--enemy); }
 /* Messages (hudMsg) : à --msg-top, sous le couloir des annonces ; ils passent à la ligne plutôt que de sortir de l'écran */
 .msg { position: absolute; left: 50%; top: var(--msg-top); transform: translateX(-50%); width: max-content; max-width: min(84vw, calc(900 * var(--hu))); font: 700 max(var(--fs-m), calc(24 * var(--hu)))/1.15 var(--hud); letter-spacing: .03em; text-transform: uppercase; text-align: center; opacity: 0; transition: opacity .3s; }
 .msg.show { opacity: 1; }

@@ -19,6 +19,10 @@ tools/nettest/harness*.html
 .wrangler/
 audio-out/
 
+# Xcode per-user and generated workspace state
+**/*.xcodeproj/xcuserdata/
+**/*.xcodeproj/project.xcworkspace/
+
 # pack d'animations Mixamo (licence : pas de fichiers bruts dans le dépôt ; seules les données cuites partent avec le jeu)
 /anim-source/
 
