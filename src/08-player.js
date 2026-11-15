@@ -24,8 +24,9 @@ const KEYS = {};
 let mouseDX = 0, mouseDY = 0;
 
 function giveLoadout() {
-  classFix(); // la classe choisie existe toujours (06r-arsenal.js)
-  const C = CLASSES[PL.classIdx = Settings.loadout];
+  // Cette version n'expose plus de classes : tous les joueurs utilisent l'équipement Assaut.
+  Settings.loadout = PL.classIdx = 0;
+  const C = CLASSES[0];
   PL.ent.arms = makeArms(classWeapons(PL.classIdx));
   PL.ksSel = ESSAI ? essaiKs() : classKs(PL.classIdx); updateStreakHud(); // séries de la classe ; celles déjà prêtes d'une autre classe attendent qu'on la reprenne
   PL.nades = C.nades; PL.nadeType = NADE_TYPES[C.nade] ? C.nade : 'frag'; PL.flashT = 0; PL.knifeT = 0; PL.nadeState = null; PL.knifeOut = false; PL.knifeHold = 0; PL.knifeBtn = null;

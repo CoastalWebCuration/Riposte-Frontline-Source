@@ -47,7 +47,7 @@ function skinPvBuild(skin) {
   return M;
 }
 /* Arme principale de la classe choisie (la dernière jouée) : celle que tient le soldat d'aperçu */
-function skinPvGunKey() { classFix(); return classWeapons(Settings.loadout)[0].key; }
+function skinPvGunKey() { return classWeapons(0)[0].key; }
 /* Arme de la vitrine (modèle de l'armurerie, dans le repère de l'arme des soldats : voir worldGunGeometry), une par arme montée */
 function skinPvGun(key) { return SKV.guns[key] || (SKV.guns[key] = buildGunModel(key).group); }
 /* Pose figée d'un soldat qui tient l'arme key : la pose procédurale du jeu, rejouée une seconde à l'arrêt (les ressorts se posent), en posture

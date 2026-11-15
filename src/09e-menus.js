@@ -507,7 +507,6 @@ const SOLO_PAGES = {
     const rows = [ // la carte et les paramètres sont dans l'encart, sous le menu
       { k: 'link', key: 'map', label: _t('Carte'), page: 'map' },
       { k: 'link', key: 'setup', label: _t('Paramètres de partie'), page: 'setup' },
-      { k: 'link', key: 'class', label: _t('Modifier la classe'), open: () => uiGo('classes') },
     ];
     if (netInLobby()) rows.push({ k: 'note', text: SRV.on ? _t('Vous êtes dans un salon public. Lancer une partie ici le quitte.') : _t('Vous êtes dans le salon {0}. Lancer une partie ici le quitte.', NET.code) });
     return { title: _t('Solo'), sub: MD.sub, rows, stage: soloStage, preview: mapPreview(m, soloCfg()) };
@@ -517,8 +516,8 @@ const SOLO_PAGES = {
 };
 function renderSolo() { lmRender(LM.scr.solo); $('soloGo').title = netInLobby() ? _t('Lancer une partie solo vous fait quitter le salon') : ''; }
 
-/* ---------- Lancement d'une partie : chargement, choix de la classe, déploiement ---------- */
-/* F = { online, map, deploy } : deploy() démarre réellement la partie une fois la classe choisie */
+/* ---------- Lancement d'une partie : chargement, puis déploiement immédiat ---------- */
+/* F = { online, map, deploy } : deploy() démarre réellement la partie une fois la carte prête. */
 function menuLaunch(F) {
   if (UI.busy) return;
   if (!F.online && netInLobby()) netQuit(); // une partie solo quitte le salon (menu principal : « Salon XXXX » disparaît)
@@ -527,11 +526,10 @@ function menuLaunch(F) {
   menuLoading(F).then((ok) => {
     if (!ok || UI.flow !== F) return;
     UI.busy = false;
-    $('matchload').classList.add('hidden'); $('ui').classList.remove('hidden');
-    $('depSub').textContent = `${mapById(F.map || Settings.map).name} · ${F.online ? _t('Match en ligne') : _t('Solo')}`;
-    $('depBack').classList.toggle('hidden', !!F.online);
-    UI.timer = F.online ? DEPLOY_AUTO : 0;
-    uiGo('deploy');
+    UI.flow = null; UI.timer = 0;
+    $('matchload').classList.add('hidden');
+    uiHide(); sfxUi('go');
+    F.deploy();
   });
 }
 /* Écran de chargement : vraie progression de la carte (09a-loading.js) ; en ligne, attente des autres joueurs */
@@ -623,11 +621,9 @@ function pmSummary() {
   $('pmSummary').innerHTML = `<div class="ps-map">${art ? `<img class="mapart" alt="" decoding="async" src="${art}">` : ''}<div class="ps-mt"><b>${esc(m.name)}</b><span>${lim}</span><span>${MATCH.online ? _t('Match en ligne') : _t('Solo')}</span></div></div>
     <div class="ps-card ps-score"><p class="lbl">${_t('Score')}</p><div class="ps-teams">${ffa ? side('a', _t('Vous'), false) + side('b', _t('Meilleur adversaire'), false) : side('a', TEAM_NAMES[mine], true) + side('b', TEAM_NAMES[1 - mine], false)}</div>${ffa ? `<p class="ps-rank" data-ps="rank"></p>` : ''}</div>
     <div class="ps-card ps-time"><p class="lbl">${_t('Temps restant')}</p><b class="ps-big" data-ps="time"></b></div>
-    <div class="ps-card ps-me"><p class="lbl">${_t('Votre partie')}</p><div class="ps-kd"><div><b data-ps="k"></b><span>${_t('Éliminations')}</span></div><div><b data-ps="d"></b><span>${_t('Morts')}</span></div><div><b data-ps="sc"></b><span>${_t('Score')}</span></div></div></div>
-    <div class="ps-card ps-cls"><p class="lbl">${_t('Classe')}</p><b data-ps="cls"></b><span data-ps="next"></span></div>`;
+    <div class="ps-card ps-me"><p class="lbl">${_t('Votre partie')}</p><div class="ps-kd"><div><b data-ps="k"></b><span>${_t('Éliminations')}</span></div><div><b data-ps="d"></b><span>${_t('Morts')}</span></div><div><b data-ps="sc"></b><span>${_t('Score')}</span></div></div></div>`;
   PMSUM.el = {}; for (const e of $('pmSummary').querySelectorAll('[data-ps]')) PMSUM.el[e.dataset.ps] = e;
   pmSummaryTick();
-  $('pmClassHint').textContent = Settings.loadout === PL.classIdx ? cls(PL.classIdx).name : _t('{0}, puis {1}', cls(PL.classIdx).name, cls(Settings.loadout).name);
   $('pmSub').textContent = MATCH.online ? _t('La partie continue pendant la pause') : _t('Partie en pause');
 }
 const PMSUM = { el: {} };
@@ -639,7 +635,6 @@ function pmSummaryTick() {
   hudStyle(E.ba, 'transform', `scaleX(${clamp(a / MATCH.limit, 0, 1)})`); hudStyle(E.bb, 'transform', `scaleX(${clamp(b / MATCH.limit, 0, 1)})`);
   if (E.rank) hudText(E.rank, _t('Vous êtes {0}', ordinal(ffaRank())));
   hudText(E.time, fmtTime(MATCH.timeLeft)); hudText(E.k, me.kills); hudText(E.d, me.deaths); hudText(E.sc, me.score);
-  hudText(E.cls, cls(PL.classIdx).name); hudText(E.next, Settings.loadout !== PL.classIdx ? _t('Puis {0} à la prochaine réapparition', cls(Settings.loadout).name) : '');
 }
 function pmOpen() { pmView('home'); if (!(TOUCH.on && !PAD.drive)) requestAnimationFrame(() => $('resumeBtn').focus({ preventScroll: true })); } // au doigt, pas de surbrillance d'arrivée
 /* Échap dans la pause : revient à l'accueil de la pause, puis reprend la partie */

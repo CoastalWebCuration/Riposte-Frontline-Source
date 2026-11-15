@@ -792,7 +792,7 @@ function netCfg(c) {
 }
 
 /* ---------- Entrée et sortie de partie ---------- */
-/* Ordre de départ (hôte ou invité) : chargement de la carte, choix de la classe, puis netStartOnlineNow (voir 09e-menus.js) */
+/* Ordre de départ (hôte ou invité) : chargement de la carte, puis netStartOnlineNow (voir 09e-menus.js) */
 function netStartOnline(m) {
   NET.cfg = netCfg(m.cfg); NET.team = m.team === 1 ? 1 : 0; NET.quickJoin = false;
   menuLaunch({ online: true, map: NET.cfg.map, deploy: () => netStartOnlineNow(m) });
