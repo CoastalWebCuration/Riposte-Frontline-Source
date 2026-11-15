@@ -256,7 +256,7 @@ function acctRenderCode(body, sub) {
   $('acCodeSave').addEventListener('click', () => {
     sfxUi('click');
     const u = ACCT.user ? ACCT.user.username : '';
-    const txt = ['Riposte: Frontline', _t('Nom d\u0027utilisateur : {0}', u), _t('Code de secours : {0}', ACCT.code), _t('Donné le {0}', fmtDate(new Date(), { day: 'numeric', month: 'long', year: 'numeric' })), '',
+    const txt = ['WARFRONT 1944', _t('Nom d\u0027utilisateur : {0}', u), _t('Code de secours : {0}', ACCT.code), _t('Donné le {0}', fmtDate(new Date(), { day: 'numeric', month: 'long', year: 'numeric' })), '',
       _t('Il sert à choisir un nouveau mot de passe si vous oubliez le vôtre (Connexion, "Mot de passe oublié ?"). Il ne sert qu\u0027une fois. Un nouveau code vous est alors donné.')].join('\n');
     const url = URL.createObjectURL(new Blob([txt + '\n'], { type: 'text/plain;charset=utf-8' })), a = document.createElement('a');
     a.href = url; a.download = _t('riposte-frontline-code-de-secours.txt'); document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 5000);

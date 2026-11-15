@@ -17,7 +17,8 @@
    Le soldat est vers 72 % de la largeur de l'image : sur un écran moins large que 21:9, le cadrage le place à 70 % de la largeur de l'écran
    (MBG_FOCUS), les boutons gardent le ciel sombre de la gauche ; sur un écran plus large, l'image est rognée en haut et en bas.
    ========================================================================== */
-const MENU_DEPTH = (window.SOCLE || {}).depth || ''; // socle (build.py)
+// WARFRONT's new painted key art has no matching depth pass. Keep it crisp and static instead of warping it with the retired artwork's map.
+const MENU_DEPTH = '';
 const MBG = { scene: null, cam: null, mat: null, ready: false, failed: false, t: 0, acc: 0, live: false, px: 0, py: 0, mx: 0, my: 0, drawn: '' };
 const MBG_IMG_A = 1916 / 821; // proportions de l'illustration (21:9)
 const MBG_FOCUS = { x: 0.72, at: 0.7 }; // soldat : 72 % de la largeur de l'image, placé à 70 % de la largeur de l'écran

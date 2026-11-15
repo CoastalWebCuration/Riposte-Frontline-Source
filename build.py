@@ -87,7 +87,7 @@ def socle_js(key,body):
     name="tex/"+key+"."+hashlib.sha1(body.encode("utf-8")).hexdigest()[:8]+".js"
     if not os.path.exists("dist/"+name): open("dist/"+name,"w",encoding="utf-8").write(body)
     socle[key]=name
-socle_js("socle-ui","(function(s){s.setProperty('--key-art',"+json.dumps("url("+data_uri("assets/menu-bg.webp")+")")+");s.setProperty('--logo',"+json.dumps("url("+data_uri("assets/logo.webp")+")")+")})(document.documentElement.style);\n")
+socle_js("socle-ui","(function(s){s.setProperty('--key-art',"+json.dumps("url("+data_uri("assets/menu-bg-warfront.png")+")")+");s.setProperty('--logo',"+json.dumps("url("+data_uri("assets/logo-warfront.png")+")")+")})(document.documentElement.style);\n")
 tissus={k:data_uri(f"assets/tenue/{k}.webp") if os.path.exists(f"assets/tenue/{k}.webp") else "" for k in ("tissus","teinte")}
 socle_js("socle","window.SOCLE="+json.dumps({"depth":data_uri("assets/menu-depth.webp"),"grain":data_uri(grain) if os.path.exists(grain) else "",**tissus,"anim":anim,
     "rankup":base64.b64encode(open("assets/rankup.mp3","rb").read()).decode("ascii")},separators=(",",":"))+";\n")
@@ -183,7 +183,7 @@ html=html.replace("__SITE__",SITE).replace("__APERCU__",apercu)
 # Manifeste de l'application installable (Android : « Ajouter à l'écran d'accueil » ouvre le jeu en plein écran, en paysage, sans barre d'adresse)
 for k in ("maskable-192","maskable-512"):
     if k not in icons: raise SystemExit("icône manquante : assets/icon/"+k+".png")
-json.dump({"id":"/","name":"Riposte: Frontline","short_name":"Riposte","description":"FPS en ligne dans le navigateur : solo contre des bots ou en ligne entre amis.",
+json.dump({"id":"/","name":"WARFRONT 1944","short_name":"WARFRONT","description":"World War II browser shooter: airborne insertion, solo bots and online multiplayer.",
     "start_url":"./","scope":"./","display":"fullscreen","display_override":["fullscreen","standalone"],"orientation":"landscape","categories":["games"],
     "background_color":"#0E110D","theme_color":"#0E110D","prefer_related_applications":False,
     "icons":[{"src":icons["icon-192"],"sizes":"192x192","type":"image/png","purpose":"any"},{"src":icons["icon-512"],"sizes":"512x512","type":"image/png","purpose":"any"},

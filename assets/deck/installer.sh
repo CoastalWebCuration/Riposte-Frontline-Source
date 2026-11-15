@@ -20,7 +20,7 @@ for a in "$@"; do
 done
 # https seulement (http pour un essai sur cette machine : tools/dev/check_deck.py) : le lanceur et ce qu'il télécharge ne passent pas en clair
 if ! [[ "$SITE" =~ ^https://[A-Za-z0-9.:-]+$ || "$SITE" =~ ^http://(127\.0\.0\.1|localhost)(:[0-9]+)?$ ]]; then echo "Adresse invalide : $SITE"; exit 1; fi
-APP="Riposte: Frontline"
+APP="WARFRONT 1944"
 DIR="$HOME/.local/share/riposte-frontline"
 TEST="${RIPOSTE_DECK_TEST:-}"
 FR=; case "${LANG:-}${LC_ALL:-}" in fr*|*fr_*) FR=1 ;; esac

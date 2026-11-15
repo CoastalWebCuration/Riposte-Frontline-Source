@@ -69,7 +69,7 @@ function menuMainRefresh() {
   deckCard(); // Steam Deck (09ra-deck.js)
   // Jouer : où l'on en est (salon ouvert), sinon les façons de jouer
   $('mmPlay').textContent = SRV.on ? (SRV.st && SRV.st.ps ? srvTitle() : _t('Salon public, {0}', srvTitle())) : NET.role !== 'off' ? _t('Salon {0}', NET.code) : _t('Seul, entre amis ou en ligne');
-  newsBadge();
+  $('verTag').textContent = _t('Version {0}', GAME_VERSION);
 }
 /* Appelé par netRender : le sous-titre du menu principal suit l'état du salon */
 function menuNetChanged() { if (UI.screen === 'main') menuMainRefresh(); }
@@ -713,7 +713,7 @@ function menuInit() {
   $('soloGo').addEventListener('click', () => menuLaunch({ online: false, map: Settings.map, deploy: () => startMatch() }));
   $('fsBtn').addEventListener('click', toggleFullscreen);
   // code source public (licence MIT, README « Code source public ») : un bouton plutôt qu'un lien, pour que la manette l'atteigne
-  $('srcBtn').addEventListener('click', () => window.open('https://github.com/BenDBSS/Riposte-Frontline-Source', '_blank', 'noopener'));
+  $('srcBtn').addEventListener('click', () => window.open('https://github.com/CoastalWebCuration/Riposte-Frontline-Source', '_blank', 'noopener'));
   mountClassPicker($('cpMenu'), 'menu'); mountClassPicker($('cpDeploy'), 'deploy'); mountClassPicker($('cpPause'), 'pause');
   mountOptions($('optMenu')); mountOptions($('optPause'));
   arsInit(); skinScreenInit(); skinRefresh();
@@ -729,7 +729,6 @@ function menuInit() {
   });
   $('menuBtn').addEventListener('click', () => toMenu());
   $('perf').classList.toggle('hidden', !Settings.perf);
-  newsInit();
   musicInit();
   mbgInit(); // fond animé des menus (09w-fond.js)
   netInit();

@@ -1,8 +1,8 @@
 {
  "id": "/",
- "name": "Riposte: Frontline",
- "short_name": "Riposte",
- "description": "FPS en ligne dans le navigateur : solo contre des bots ou en ligne entre amis.",
+ "name": "WARFRONT 1944",
+ "short_name": "WARFRONT",
+ "description": "World War II browser shooter: airborne insertion, solo bots and online multiplayer.",
  "start_url": "./",
  "scope": "./",
  "display": "fullscreen",

@@ -1,4 +1,4 @@
-<h1 align="center"><img src="assets/logo.webp" alt="Riposte: Frontline" width="640"></h1>
+<h1 align="center"><img src="assets/logo-warfront.png" alt="WARFRONT 1944" width="640"></h1>
 
 ## Plane-drop fork
 
@@ -9,12 +9,12 @@ maps, and multiplayer use the original rules. The class menus are removed and ev
 the insertion.
 
 Build with `python3 build.py`, then serve `dist/` with `python3 -m http.server 8765 --directory dist` and open
-`http://localhost:8765/riposte-frontline.html`. The plane drop is a local source modification, not an official Riposte release.
+`http://localhost:8765/riposte-frontline.html`. This is an independent fork and is not an official Riposte release.
 The upstream license and asset notices below still apply. For development tests that need an immediate ground start, set
 `window.MATCH_PLANE_DROP = false` before starting a match, or call `startMatch({ planeDrop: false })`.
 
-**Riposte: Frontline** is a free first-person shooter played in the browser, on desktop and on phones, in the spirit of modern
-Call of Duty games: https://www.playriposte.com
+**WARFRONT 1944** is a World War II-themed browser shooter built from the open-source Riposte: Frontline codebase. The fork keeps
+the original combat and maps, removes class selection, and begins solo matches with an airborne insertion.
 
 This repository is a snapshot of the game's source code, version 5.6.0. It is updated from time to time, not with every
 release of the game. You can read it,
