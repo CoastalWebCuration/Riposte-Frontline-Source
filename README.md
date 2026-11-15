@@ -4,7 +4,7 @@
 
 This fork adds a plane insertion to the start of solo matches. Press **Space** to jump, then press it again to open your parachute;
 use the movement controls to steer. The plane ejects you automatically at the end of its route, and the parachute opens automatically
-near the ground. Bots and the match clock wait until you land and the regular countdown ends. Normal first-person combat, respawns,
+near the ground. Bots, combat, and the match clock start the moment you land. Normal first-person combat, respawns,
 maps, and multiplayer use the original rules. The class menus are removed and every player uses the Assault loadout. Pause also pauses
 the insertion.
 

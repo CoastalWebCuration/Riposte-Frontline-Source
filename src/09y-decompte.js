@@ -40,6 +40,11 @@ function cdStart() {
   if (!cdOn()) { cdGo(true); trackpadHint(); return; } // pas de décompte (outil de test) : départ immédiat, comme avant
   $('hud').classList.add('counting'); trackpadHint();
 }
+/* Atterrissage de l'insertion solo : le contact avec le sol donne le départ immédiatement. */
+function cdStartNow() {
+  CD.done = false; CD.wait = false; MATCH.cd = 0;
+  cdGo(false);
+}
 /* À chaque image de la partie (frame) : le temps, l'affichage (une écriture par seconde) et les sons */
 function cdTick() {
   if (CD.done) return;

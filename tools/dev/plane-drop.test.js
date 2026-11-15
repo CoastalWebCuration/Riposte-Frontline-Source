@@ -25,7 +25,7 @@ function insertionHarness(options = {}) {
   const T = context.THREE;
   const scene = new T.Scene(), camera = new T.PerspectiveCamera(70);
   const pos = new T.Vector3(-8, 0, 0);
-  const calls = { countdown: 0, camera: 0 };
+  const calls = { countdown: 0, immediateStart: 0, camera: 0 };
   Object.assign(context, {
     scene, camera, V3: T.Vector3, TAU: Math.PI * 2,
     MATCH: { online: false, state: 'playing', time: 0 },
@@ -45,7 +45,7 @@ function insertionHarness(options = {}) {
       scene.add(body.root); return body;
     },
     setSoldierLod() {}, soldierLook() {}, poseSoldier() {}, layoutSoldier() {},
-    applyCamera() { calls.camera++; }, cdStart() { calls.countdown++; },
+    applyCamera() { calls.camera++; }, cdStart() { calls.countdown++; }, cdStartNow() { calls.immediateStart++; },
   });
   vm.runInContext(read('src/09zc-plane-drop.js') + '\nglobalThis.dropState = PLANE_DROP;', context);
   return { context, state: context.dropState, calls };
@@ -62,7 +62,8 @@ test('automatic insertion progresses through flight, freefall, parachute and a s
   }
   assert.deepEqual([...phases], ['plane', 'fall', 'parachute', 'landed']);
   assert.equal(c.planeDropActive(), false);
-  assert.equal(calls.countdown, 1, 'The original countdown starts exactly once on landing');
+  assert.equal(calls.countdown, 0, 'Landing does not start the old countdown');
+  assert.equal(calls.immediateStart, 1, 'Combat starts exactly once on landing');
   assert.equal(c.PL.ent.pos.y, 0);
   assert.ok([-20, 0, 20].includes(c.PL.ent.pos.x), 'Landing is on the normal walkable navigation mesh');
   assert.equal(c.PL.ent.onGround, true);
@@ -101,7 +102,8 @@ test('an empty navigation mesh or void below the drop safely returns to the orig
   for (let frame = 0; frame < 1000 && c.planeDropActive(); frame++) c.planeDropUpdate(0.05);
   assert.equal(c.planeDropActive(), false);
   assert.deepEqual(c.PL.ent.pos.toArray(), spawn.toArray());
-  assert.equal(calls.countdown, 1);
+  assert.equal(calls.countdown, 0);
+  assert.equal(calls.immediateStart, 1);
 });
 
 test('reset hides insertion assets, clears transient state and reuses meshes on replay', () => {
@@ -116,6 +118,7 @@ test('reset hides insertion assets, clears transient state and reuses meshes on 
   assert.equal(drop.panel.hidden, true);
   assert.equal(drop.plane.visible || drop.chute.visible || drop.body.root.visible, false);
   assert.equal(calls.countdown, 0, 'Cancelling insertion does not start combat');
+  assert.equal(calls.immediateStart, 0, 'Cancelling insertion does not start combat');
   c.PL.ent.pos.set(-8, 0, 0);
   c.planeDropStart();
   assert.equal(drop.phase, 'plane');

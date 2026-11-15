@@ -185,7 +185,7 @@ function planeDropLand(site) {
   e.input.jump = false; KEYS.Space = false; PL.pitch = e.pitch = 0; PL.held = PL.queued = PL.adsWant = false;
   PL.lastY = e.pos.y; PL.lastOn = true; PL.stepOff = PL.stepV = 0; PL.wasAir = false;
   planeDropReset(); D.phase = 'landed'; VM.root.visible = VM.holder.visible = true;
-  applyCamera(0, MATCH.time, false); cdStart();
+  applyCamera(0, MATCH.time, false); cdStartNow();
 }
 
 function planeDropReset() {
