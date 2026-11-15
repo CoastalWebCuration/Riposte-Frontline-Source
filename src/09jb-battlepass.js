@@ -17,20 +17,22 @@ const BP = {
   busy: false,
   error: '',
   match: null,
-  data: { season: 1, xp: 0, claimed: [], matches: 0, wins: 0, modified_at: '' },
+  data: { season: 1, xp: 0, claimed: [], matches: 0, wins: 0, premium: false, bonds: 1200, owned: [], modified_at: '' },
 };
 const BP_TOKEN_KEY = 'warfront_coastal_id';
 const BP_SAVE_KEY = 'warfront_battle_pass';
 const BP_DEVICE_KEY = 'warfront_device_id';
 const BP_REWARDS = [
-  ['I', 'Enlistment Patch', 'Emblem'], ['II', 'Field Rations', '100 XP boost'], ['III', 'Olive Drab', 'Weapon wrap'],
-  ['IV', 'Airborne', 'Player banner'], ['V', 'War Bonds', 'Currency pack'], ['VI', 'Pathfinder', 'Emblem'],
-  ['VII', 'Supply Drop', 'Reward crate'], ['VIII', 'Frontline', 'Weapon wrap'], ['IX', 'Dog Tags', 'Calling card'],
-  ['X', 'Paratrooper', 'Outfit'], ['XI', 'Recon Kit', 'Reward crate'], ['XII', 'Night Raid', 'Weapon wrap'],
-  ['XIII', 'Liberator', 'Player banner'], ['XIV', 'Officer Issue', 'Sidearm wrap'], ['XV', 'Battle Star', 'Emblem'],
-  ['XVI', 'Steel Division', 'Calling card'], ['XVII', 'Aviator', 'Outfit detail'], ['XVIII', 'Victory Roll', 'Weapon wrap'],
-  ['XIX', 'Veteran', 'Player title'], ['XX', 'European Ace', 'Season outfit'],
+  ['I', 'Enlistment Patch', 'Free emblem', false, 0], ['◆', '100 War Bonds', 'Premium currency', true, 100], ['III', 'Olive Drab', 'Weapon wrap', true, 0],
+  ['IV', 'Airborne', 'Free player banner', false, 0], ['◆', '200 War Bonds', 'Premium currency', true, 200], ['VI', 'Pathfinder', 'Premium emblem', true, 0],
+  ['VII', 'Supply Drop', 'Free reward crate', false, 0], ['◆', '200 War Bonds', 'Premium currency', true, 200], ['IX', 'Dog Tags', 'Premium calling card', true, 0],
+  ['X', 'Paratrooper', 'Premium outfit', true, 0], ['◆', '200 War Bonds', 'Premium currency', true, 200], ['XII', 'Night Raid', 'Free weapon wrap', false, 0],
+  ['XIII', 'Liberator', 'Premium banner', true, 0], ['◆', '200 War Bonds', 'Premium currency', true, 200], ['XV', 'Battle Star', 'Free emblem', false, 0],
+  ['XVI', 'Steel Division', 'Premium calling card', true, 0], ['◆', '200 War Bonds', 'Premium currency', true, 200], ['XVIII', 'Victory Roll', 'Free weapon wrap', false, 0],
+  ['XIX', 'Veteran', 'Premium player title', true, 0], ['◆', '200 War Bonds', 'Premium currency + Ace outfit', true, 200],
 ];
+const BP_PREMIUM_COST = 950;
+const BP_SHOP_OFFERS = { nomad: 800, tempest: 900, verdant: 1000, raptor: 1100, void: 1200, gilet: 700 };
 
 function bpRead(key, fallback) {
   try { const v = JSON.parse(localStorage.getItem(key) || 'null'); return v || fallback; } catch (e) { return fallback; }
@@ -47,6 +49,43 @@ function bpDevice() {
 function bpTier() { return Math.min(BP.maxTier, 1 + Math.floor(Math.max(0, BP.data.xp) / BP.xpPerTier)); }
 function bpInto() { return bpTier() >= BP.maxTier ? BP.xpPerTier : Math.max(0, BP.data.xp) % BP.xpPerTier; }
 function bpTokenSave(tokens) { BP.tokens = tokens || null; bpWrite(BP_TOKEN_KEY, BP.tokens); }
+function bpBonds() { return Math.max(0, Math.floor(Number(BP.data.bonds || 0))); }
+function bpOwnsSkin(s) { return Array.isArray(BP.data.owned) && BP.data.owned.includes(s); }
+function bpPersist() {
+  bpWrite(BP_SAVE_KEY, BP.data);
+  if (BP.gamer) bpCloudSave();
+  if (typeof acctChip === 'function') acctChip();
+  if (typeof shopRefresh === 'function' && typeof UI !== 'undefined' && UI.screen === 'skins') shopRefresh();
+}
+function bpGrantRewards() {
+  if (!BP.data.premium) return 0;
+  if (!Array.isArray(BP.data.claimed)) BP.data.claimed = [];
+  let gained = 0;
+  for (let i = 0; i < bpTier(); i++) {
+    const reward = BP_REWARDS[i], key = 's' + BP.season + '-t' + (i + 1) + '-bonds';
+    if (!reward[4] || BP.data.claimed.includes(key)) continue;
+    BP.data.claimed.push(key); gained += reward[4];
+  }
+  if (gained) BP.data.bonds = bpBonds() + gained;
+  return gained;
+}
+function bpActivatePremium() {
+  if (BP.data.premium) return { ok: true, message: 'Premium Battle Pass already active.' };
+  if (bpBonds() < BP_PREMIUM_COST) return { ok: false, message: 'Not enough War Bonds.' };
+  BP.data.bonds = bpBonds() - BP_PREMIUM_COST; BP.data.premium = true;
+  const back = bpGrantRewards(); bpPersist();
+  return { ok: true, message: 'Premium Battle Pass activated' + (back ? ' · ' + back + ' War Bonds claimed' : '') + '.' };
+}
+function bpBuySkin(s) {
+  const price = BP_SHOP_OFFERS[s];
+  if (!price || !SKINS[s]) return { ok: false, message: 'Offer unavailable.' };
+  if (bpOwnsSkin(s) || skinUnlocked(s)) return { ok: true, message: SKINS[s].name + ' is already owned.' };
+  if (bpBonds() < price) return { ok: false, message: 'Not enough War Bonds.' };
+  BP.data.bonds = bpBonds() - price;
+  if (!Array.isArray(BP.data.owned)) BP.data.owned = [];
+  BP.data.owned.push(s); bpPersist();
+  return { ok: true, message: SKINS[s].name + ' added to your Outfits.' };
+}
 
 async function coastalRaw(route, method, body, token) {
   const query = method === 'GET' && body ? '&' + new URLSearchParams(body).toString() : '';
@@ -109,6 +148,10 @@ async function bpCloudSave() {
 }
 async function bpInit() {
   BP.data = Object.assign({}, BP.data, bpRead(BP_SAVE_KEY, null) || {});
+  if (!Array.isArray(BP.data.claimed)) BP.data.claimed = [];
+  if (!Array.isArray(BP.data.owned)) BP.data.owned = [];
+  BP.data.bonds = bpBonds();
+  if (bpGrantRewards()) bpWrite(BP_SAVE_KEY, BP.data);
   BP.tokens = bpRead(BP_TOKEN_KEY, null);
   ACCT.state = BP.tokens ? 'init' : 'ready';
   if (BP.tokens) {
@@ -139,8 +182,8 @@ async function bpLogout() {
 function bpRewardsHtml() {
   const tier = bpTier();
   return BP_REWARDS.map((r, i) => {
-    const n = i + 1, on = n <= tier;
-    return '<article class="bp-tier ' + (on ? 'on ' : '') + (n === tier ? 'now' : '') + '"><span class="n">Tier ' + n + '</span>' + (on ? '' : '<span class="lock">◆</span>') + '<span class="ico">' + r[0] + '</span><b>' + esc(r[1]) + '</b><small>' + esc(r[2]) + '</small></article>';
+    const n = i + 1, reached = n <= tier, premium = !!r[3], owned = reached && (!premium || BP.data.premium);
+    return '<article class="bp-tier ' + (owned ? 'on ' : '') + (n === tier ? 'now ' : '') + (premium ? 'premium ' : 'free ') + '"><span class="n">Tier ' + n + '</span>' + (owned ? '' : '<span class="lock">◆</span>') + '<span class="bp-lane">' + (premium ? 'Premium' : 'Free') + '</span><span class="ico">' + r[0] + '</span><b>' + esc(r[1]) + '</b><small>' + esc(r[2]) + '</small></article>';
   }).join('');
 }
 function bpRender() {
@@ -153,7 +196,7 @@ function bpRender() {
     return;
   }
   const tier = bpTier(), into = bpInto(), pct = tier >= BP.maxTier ? 1 : into / BP.xpPerTier;
-  body.innerHTML = '<section class="bp-hero"><div><p class="bp-kicker">Season 01 · European Theater</p><h3>Battle Pass</h3><p>Deploy, survive and fight through twenty campaign tiers. Progress is attached to ' + esc(BP.gamer.gamer_tag) + ' through Coastal ID.</p><div class="bp-progress" role="progressbar" aria-valuemin="0" aria-valuemax="' + BP.xpPerTier + '" aria-valuenow="' + into + '"><i style="transform:scaleX(' + pct + ')"></i></div><div class="bp-progress-copy"><span>' + into + ' / ' + BP.xpPerTier + ' XP</span><span>' + (tier >= BP.maxTier ? 'Season complete' : 'Tier ' + (tier + 1) + ' next') + '</span></div></div><div class="bp-rank"><span>Current tier</span><b>' + tier + '</b><span>' + BP.data.xp + ' total XP</span></div></section><section><p class="lbl">Campaign rewards</p><div class="bp-track">' + bpRewardsHtml() + '</div></section><section class="bp-id"><div><p class="bp-kicker">Coastal ID connected</p><h3>' + esc(BP.gamer.gamer_tag) + '</h3><p>' + Number(BP.gamer.friend_count || 0) + ' friends · Progress synced across devices</p></div><button class="btn" id="bpOut" type="button">Sign out</button></section>';
+  body.innerHTML = '<section class="bp-hero"><div><p class="bp-kicker">Season 01 · European Theater</p><h3>Battle Pass</h3><p>Deploy, survive and fight through twenty campaign tiers. Progress is attached to ' + esc(BP.gamer.gamer_tag) + ' through Coastal ID.</p><div class="bp-progress" role="progressbar" aria-valuemin="0" aria-valuemax="' + BP.xpPerTier + '" aria-valuenow="' + into + '"><i style="transform:scaleX(' + pct + ')"></i></div><div class="bp-progress-copy"><span>' + into + ' / ' + BP.xpPerTier + ' XP</span><span>' + (tier >= BP.maxTier ? 'Season complete' : 'Tier ' + (tier + 1) + ' next') + '</span></div></div><div class="bp-rank"><span>' + (BP.data.premium ? 'Premium active' : 'Free pass') + '</span><b>' + tier + '</b><span>' + bpBonds() + ' War Bonds</span></div></section><section><p class="lbl">Campaign rewards</p><div class="bp-track">' + bpRewardsHtml() + '</div></section><section class="bp-id"><div><p class="bp-kicker">Coastal ID connected</p><h3>' + esc(BP.gamer.gamer_tag) + '</h3><p>' + Number(BP.gamer.friend_count || 0) + ' friends · Progress synced across devices</p></div><button class="btn" id="bpOut" type="button">Sign out</button></section>';
   $('bpOut').addEventListener('click', bpLogout);
 }
 function bpRefreshScreen() { bpRender(); }
@@ -170,7 +213,7 @@ async function bpMatchEnd(result, show) {
   BP.data.xp = Math.max(0, Number(BP.data.xp || 0)) + gained;
   BP.data.matches = Math.max(0, Number(BP.data.matches || 0)) + 1;
   if (result === 'win') BP.data.wins = Math.max(0, Number(BP.data.wins || 0)) + 1;
-  bpWrite(BP_SAVE_KEY, BP.data); bpApplyIdentity(BP.gamer); acctChip();
+  bpGrantRewards(); bpWrite(BP_SAVE_KEY, BP.data); bpApplyIdentity(BP.gamer); acctChip();
   if (BP.gamer) bpCloudSave();
   const box = $('endXp');
   if (show && box && MATCH.state === 'ended') {

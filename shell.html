@@ -202,6 +202,8 @@ body.sk-live #ui[data-screen="skins"] .ui-shade { background: none; } /* écran 
 .bp-tier b { display: block; font-size: 19px; line-height: 1.05; }
 .bp-tier small { display: block; margin-top: 5px; color: var(--dim); font-size: 14px; }
 .bp-tier .lock { position: absolute; top: 12px; right: 12px; color: var(--mute); }
+.bp-tier .bp-lane { display: inline-block; margin-top: 7px; padding: 2px 6px; color: var(--dim); background: rgba(228,219,193,.08); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.bp-tier.premium .bp-lane { color: var(--acc-hi); background: rgba(184,155,90,.14); }
 .bp-id { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 18px 22px; background: rgba(12,15,11,.9); border: 1px solid var(--line); }
 .bp-id h3 { margin: 0; font: 400 28px/1 var(--stencil); }
 .bp-id p { margin: 5px 0 0; color: var(--dim); }
@@ -1002,6 +1004,40 @@ div.lb-foot { display: flex; justify-content: flex-end; }
 /* Tenues (09u-tenues.js) : aperçu 3D à gauche, cartes à droite ; dans la pause, les cartes seules. Cartes de la même famille que les autres
    listes à choisir : portée = filet jaune de 2 px et étiquette « Choisie » ; tenue de défi regardée (verrouillée) : filet clair, ses défis détaillés */
 .sk { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 28px; align-items: start; }
+.shop-toolbar { flex: none; display: flex; align-items: stretch; justify-content: space-between; gap: 16px; padding: 8px; background: rgba(8,10,9,.78); border: 1px solid var(--line); }
+.shop-tabs { display: flex; gap: 4px; }
+.shop-tabs button { min-width: 130px; padding: 10px 18px; border: 1px solid transparent; background: transparent; color: var(--dim); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.shop-tabs button:hover, .shop-tabs button:focus-visible { color: var(--paper); border-color: var(--line-2); outline: none; }
+.shop-tabs button.on { color: var(--acc-ink); background: var(--acc); border-color: var(--acc); }
+.shop-wallet { display: flex; align-items: center; gap: 10px; min-width: 190px; padding: 8px 14px; color: var(--dim); border-left: 1px solid var(--line); font-weight: 700; letter-spacing: .04em; }
+.shop-wallet i, .bond-icon { display: inline-grid; place-items: center; width: 30px; height: 30px; flex: none; background: linear-gradient(145deg, #d8c278, #8b6d28); color: #161208; clip-path: polygon(50% 0, 92% 22%, 92% 78%, 50% 100%, 8% 78%, 8% 22%); font: 400 18px/1 var(--stencil); font-style: normal; }
+.shop-wallet b { color: var(--paper); font: 400 24px/1 var(--stencil); }
+.shop-panel { min-height: 0; }
+.shop-panel[hidden] { display: none !important; }
+.shop-status { flex: none; min-height: 0; margin: -8px 0 0; color: var(--acc-hi); font-size: var(--fs-s); }
+.shop-status:empty { display: none; }
+.shop-featured { display: grid; grid-template-columns: minmax(290px, .8fr) minmax(0, 1.5fr); gap: 18px; }
+.shop-pass-card { position: relative; overflow: hidden; min-height: 320px; padding: 28px; display: flex; flex-direction: column; justify-content: flex-end; background: radial-gradient(circle at 75% 18%, rgba(184,155,90,.35), transparent 36%), linear-gradient(145deg, #262a1e, #0b0d0a 72%); border: 1px solid var(--acc-line); box-shadow: var(--shadow); }
+.shop-pass-card::before { content: "S01"; position: absolute; right: 14px; top: -10px; color: rgba(228,219,193,.07); font: 400 110px/1 var(--stencil); }
+.shop-pass-card h3 { position: relative; margin: 0; font: 400 clamp(38px, 5vw, 64px)/.9 var(--stencil); }
+.shop-pass-card p { position: relative; max-width: 42ch; color: var(--dim); font-size: 17px; }
+.shop-pass-card .btns { position: relative; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.shop-cost { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+.shop-cost .bond-icon { width: 23px; height: 23px; font-size: 13px; }
+.shop-offers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-content: start; }
+.shop-offer { position: relative; min-width: 0; overflow: hidden; background: rgba(10,11,9,.82); border: 1px solid var(--line); }
+.shop-offer.feature { grid-column: span 2; }
+.shop-offer img { display: block; width: 100%; height: clamp(150px, 27vh, 270px); object-fit: cover; object-position: center 20%; background: #181b14; }
+.shop-offer-tx { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 10px; align-items: center; padding: 11px 12px 12px; }
+.shop-offer h4 { margin: 0; font: 400 22px/1 var(--stencil); text-transform: uppercase; }
+.shop-offer p { grid-column: 1 / -1; margin: 0; color: var(--dim); font-size: 14px; }
+.shop-offer .btn { grid-column: 1 / -1; margin-top: 5px; }
+.shop-owned { color: var(--acc); font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.shop-pass-view { display: flex; flex-direction: column; gap: 18px; }
+.shop-pass-view .bp-hero { min-height: 190px; }
+@media (max-width: 960px) { .shop-featured { grid-template-columns: 1fr; } .shop-offers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 720px) { .shop-toolbar { flex-direction: column; } .shop-tabs { overflow-x: auto; } .shop-tabs button { min-width: 110px; } .shop-wallet { border-left: 0; border-top: 1px solid var(--line); } }
+@media (max-height: 520px) { .shop-toolbar { padding: 4px; } .shop-tabs button { min-width: 110px; padding: 6px 12px; } .shop-wallet { min-width: 150px; padding: 4px 10px; } .shop-featured { grid-template-columns: minmax(240px, .72fr) minmax(0, 1.5fr); } .shop-pass-card { min-height: 240px; padding: 18px; } .shop-offer img { height: calc(var(--u) * 29); } }
 .sk-stage { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .skv { aspect-ratio: 3 / 4; max-height: calc(var(--app-h, 100vh) * .68); min-height: 0; }
 .skv.live { background: none; } /* aperçu animé : le soldat et son studio sont dessinés dans la toile du jeu, sous ce cadre (09u-tenues.js) */
@@ -2578,7 +2614,7 @@ body.touch #perf { top: auto; right: auto; left: var(--sl); bottom: var(--sb); }
       <nav class="mlist" data-nav data-lm=".mbtn" aria-label="Menu principal">
         <button class="mbtn" type="button" data-go="play"><b>Jouer</b><span id="mmPlay">Seul, entre amis ou en ligne</span></button>
         <div class="msep" aria-hidden="true"></div>
-        <button class="mbtn m2" type="button" data-go="skins"><b>Tenues</b><span>Dix tenues, dont six à débloquer</span></button>
+        <button class="mbtn m2" type="button" data-go="skins"><b>Shop</b><span>Outfits, Battle Pass and War Bonds</span></button>
         <button class="mbtn m2" type="button" data-go="options"><b>Options</b><span>Jeu, audio, vidéo, commandes</span></button>
       </nav>
       <div class="pwa-card hidden" id="pwaCard"><p id="pwaTxt">Installez le jeu sur votre écran d'accueil. Plein écran, sans barre d'adresse.</p><div class="btns"><button id="pwaGo" class="btn primary" type="button">Installer</button></div></div>
@@ -2698,13 +2734,26 @@ body.touch #perf { top: auto; right: auto; left: var(--sl); bottom: var(--sb); }
     <div id="cpMenu"></div>
   </section>
 
-  <!-- Tenues : quatre tenues au choix, quelle que soit l'arme de la classe (src/09u-tenues.js ; les tenues : src/06ga-tenues.js) -->
-  <section class="scr fit" id="scr-skins">
-    <header class="shead"><button class="back" type="button" data-back>Retour</button><div><h2>Tenues</h2><p>Votre tenue, quelle que soit votre arme. Elle change tout de suite.</p></div></header>
-    <div class="sk">
-      <div class="sk-stage"><div class="vw skv" id="skView"></div></div>
-      <div class="sk-list" id="skList" role="listbox" aria-label="Tenues"></div>
+  <!-- Shop: featured drops, outfits, Battle Pass and its War Bonds currency. -->
+  <section class="scr" id="scr-skins">
+    <header class="shead"><button class="back" type="button" data-back>Back</button><div><h2>Shop</h2><p id="shopSub">Season 01 · Outfits, Battle Pass and premium rewards</p></div></header>
+    <div class="shop-toolbar">
+      <nav class="shop-tabs" aria-label="Shop sections">
+        <button class="on" type="button" data-shop-tab="featured">Featured</button>
+        <button type="button" data-shop-tab="outfits">Outfits</button>
+        <button type="button" data-shop-tab="pass">Battle Pass</button>
+      </nav>
+      <div class="shop-wallet" aria-label="War Bonds balance"><i>W</i><span>War Bonds</span><b id="shopBonds">0</b></div>
     </div>
+    <p class="shop-status" id="shopStatus" role="status"></p>
+    <div class="shop-panel shop-featured" id="shopFeatured"></div>
+    <div class="shop-panel" id="shopOutfits" hidden>
+      <div class="sk">
+        <div class="sk-stage"><div class="vw skv" id="skView"></div></div>
+        <div class="sk-list" id="skList" role="listbox" aria-label="Outfits"></div>
+      </div>
+    </div>
+    <div class="shop-panel shop-pass-view" id="shopPass" hidden></div>
   </section>
 
   <!-- Atelier de classe : arme, accessoires et camouflages d'une classe personnalisée (src/09n-armurerie.js, vitrine 3D : 09o-vitrine.js) -->

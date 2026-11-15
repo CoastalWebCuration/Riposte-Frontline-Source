@@ -597,6 +597,7 @@ function resumeGame() {
    Le jeu se met alors en pause en rendant lui-même la capture, et la reprend sans clic (le navigateur n'exige un geste que
    lorsque c'est lui, par Échap, qui l'a défaite). Sans plein écran ni verrou du clavier, la reprise demande un clic. */
 function enterGameFullscreen() {
+  if (window.WARFRONT_NATIVE) return;
   if (TOUCH.on) { touchFullscreen(); return; } // téléphone : plein écran et paysage (09q-tactile.js)
   if (!Settings.fsGame || document.fullscreenElement || !document.documentElement.requestFullscreen) return;
   try { LOCK.fsPending = document.documentElement.requestFullscreen().catch(() => {}); } catch (e) { /* ignoré */ }

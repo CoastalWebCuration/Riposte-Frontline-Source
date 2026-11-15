@@ -41,7 +41,7 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
         (() => {
           document.body.classList.add('native-app');
           const style = document.createElement('style');
-          style.textContent = '#fsBtn,#pwaCard,#pwaOffer,#deckCard{display:none!important}';
+          style.textContent = '#fsBtn,#srcBtn,.lic,.credit,#pwaCard,#pwaOffer,#deckCard{display:none!important}';
           document.head.appendChild(style);
         })();
         """

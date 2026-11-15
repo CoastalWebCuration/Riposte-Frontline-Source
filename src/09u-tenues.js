@@ -29,6 +29,51 @@ const SK_AIM = new V3(0, 0.93, 0);
 /* Posture de l'aperçu : part de la visée (0 : arme basse, en travers du corps ; 1 : épaulée) et inclinaison du regard (rad) ; a : azimut de la caméra
    (trois quarts depuis la droite du soldat, l'arme se présente de côté) */
 const SK_POSE = { aim: 0.5, pitch: -0.1, a: 0.6 };
+const SHOP = { tab: 'featured', message: '', timer: 0 };
+const shopBond = (n) => `<span class="shop-cost"><i class="bond-icon">W</i>${Math.max(0, Number(n || 0))}</span>`;
+function shopOfferHtml(s, feature = false) {
+  const K = SKINS[s], price = BP_SHOP_OFFERS[s], owned = skinUnlocked(s), wearing = s === skinMine();
+  return `<article class="shop-offer${feature ? ' feature' : ''}">${skinThumbImg(s)}<div class="shop-offer-tx"><h4>${esc(K.name)}</h4>${owned ? `<span class="shop-owned">${wearing ? 'Equipped' : 'Owned'}</span>` : shopBond(price)}<p>${esc(K.role)}</p><button class="btn${owned ? '' : ' primary'}" type="button" data-shop-${owned ? 'wear' : 'buy'}="${s}">${owned ? (wearing ? 'Equipped' : 'Equip outfit') : `Get for ${price} War Bonds`}</button></div></article>`;
+}
+function shopFeaturedHtml() {
+  const premium = !!BP.data.premium;
+  return `<section class="shop-pass-card"><p class="bp-kicker">Season 01 · European Theater</p><h3>${premium ? 'Premium Active' : 'Battle Pass'}</h3><p>${premium ? `Tier ${bpTier()} · Earn every premium reward and up to 1,300 War Bonds.` : 'Unlock twenty campaign tiers, premium outfits, wraps and enough War Bonds to fund the next deployment.'}</p><div class="btns"><button class="btn primary" type="button" data-shop-tab="pass">View Battle Pass</button>${premium ? '' : `<span>${shopBond(BP_PREMIUM_COST)} to activate</span>`}</div></section><section class="shop-offers">${shopOfferHtml('nomad', true)}${shopOfferHtml('tempest')}${shopOfferHtml('void')}</section>`;
+}
+function shopPassHtml() {
+  const tier = bpTier(), into = bpInto(), pct = tier >= BP.maxTier ? 1 : into / BP.xpPerTier, premium = !!BP.data.premium;
+  return `<section class="bp-hero"><div><p class="bp-kicker">Season 01 · European Theater</p><h3>${premium ? 'Premium Battle Pass' : 'Battle Pass'}</h3><p>${premium ? 'Premium track active. Earn back 1,300 War Bonds while you advance through the campaign.' : 'The free track is always active. Upgrade once with War Bonds to unlock every premium reward you reach.'}</p><div class="bp-progress" role="progressbar" aria-valuemin="0" aria-valuemax="${BP.xpPerTier}" aria-valuenow="${into}"><i style="transform:scaleX(${pct})"></i></div><div class="bp-progress-copy"><span>${into} / ${BP.xpPerTier} XP</span><span>${tier >= BP.maxTier ? 'Season complete' : `Tier ${tier + 1} next`}</span></div><div class="btns">${premium ? '<span class="shop-owned">Premium owned</span>' : `<button class="btn primary" type="button" data-shop-pass>Activate Premium · ${BP_PREMIUM_COST} War Bonds</button>`}<button class="btn" type="button" data-go="profile">${BP.gamer ? 'Coastal ID connected' : 'Connect Coastal ID'}</button></div></div><div class="bp-rank"><span>${premium ? 'Premium' : 'Free'} tier</span><b>${tier}</b><span>${bpBonds()} War Bonds</span></div></section><section><p class="lbl">Free + premium rewards</p><div class="bp-track">${bpRewardsHtml()}</div></section>`;
+}
+function shopSetStatus(message, error = false) {
+  SHOP.message = message || '';
+  const el = $('shopStatus'); if (el) { el.textContent = SHOP.message; el.style.color = error ? 'var(--danger)' : ''; }
+  clearTimeout(SHOP.timer);
+  if (message) SHOP.timer = setTimeout(() => { SHOP.message = ''; if ($('shopStatus')) $('shopStatus').textContent = ''; }, 5000);
+}
+function shopSetTab(tab) {
+  if (!['featured', 'outfits', 'pass'].includes(tab)) tab = 'featured';
+  SHOP.tab = tab;
+  for (const b of $$('.shop-tabs [data-shop-tab]')) b.classList.toggle('on', b.dataset.shopTab === tab);
+  $('shopFeatured').hidden = tab !== 'featured'; $('shopOutfits').hidden = tab !== 'outfits'; $('shopPass').hidden = tab !== 'pass';
+  document.body.classList.toggle('sk-live', tab === 'outfits' && SKV.live);
+  if (tab === 'outfits') { SKV.dirty = true; skinRefresh(); }
+  shopRefresh();
+}
+function shopRefresh() {
+  const wallet = $('shopBonds'); if (!wallet) return;
+  wallet.textContent = String(bpBonds());
+  $('shopFeatured').innerHTML = shopFeaturedHtml();
+  $('shopPass').innerHTML = shopPassHtml();
+  const status = $('shopStatus'); if (status && SHOP.message) status.textContent = SHOP.message;
+}
+function shopAction(target) {
+  const tab = target.closest('[data-shop-tab]'); if (tab) { sfxUi('tab'); shopSetTab(tab.dataset.shopTab); return true; }
+  const buy = target.closest('[data-shop-buy]');
+  if (buy) { const result = bpBuySkin(buy.dataset.shopBuy); shopSetStatus(result.message, !result.ok); sfxUi(result.ok ? 'confirm' : 'error'); shopRefresh(); skinRefresh(); return true; }
+  const wear = target.closest('[data-shop-wear]');
+  if (wear) { skinPick(wear.dataset.shopWear); shopSetStatus(SKINS[wear.dataset.shopWear].name + ' equipped.'); sfxUi('confirm'); shopRefresh(); return true; }
+  if (target.closest('[data-shop-pass]')) { const result = bpActivatePremium(); shopSetStatus(result.message, !result.ok); sfxUi(result.ok ? 'confirm' : 'error'); shopRefresh(); return true; }
+  return false;
+}
 /* Matière d'aperçu d'une tenue (sans volume d'éclairage : aucune carte n'est chargée aux menus) ; teinte et bandes posées à chaque rendu */
 function skinPvMat(skin) { return SKV.mats[skin] || (SKV.mats[skin] = gearMaterial(skin, 'pv')); }
 /* Soldat d'aperçu d'une tenue (modèle détaillé), avec les mêmes os que les soldats du jeu ; S.gun porte l'arme (posée par skinPvPlace) */
@@ -211,10 +256,11 @@ function skinScreenInit() {
   SKV.cv.tabIndex = 0; SKV.cv.setAttribute('aria-label', _t('Tenue en 3D, flèches pour la faire tourner'));
   SKV.cv.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); SKV.a += e.key === 'ArrowLeft' ? 0.15 : -0.15; SKV.dirty = true; } });
   $('skList').addEventListener('click', (e) => { const b = e.target.closest('.sk-card'); if (b) { sfxUi('click'); skinPick(b.dataset.skin); } });
+  $('scr-skins').addEventListener('click', (e) => { if (shopAction(e.target)) e.preventDefault(); });
 }
 /* Arrivée sur l'écran Tenues */
 function renderSkins() {
-  skinView(skinMine()); skinRefresh(); SKV.W = 0; SKV.a = SK_POSE.a; SKV.lv = ''; SKV.dirty = true; // de trois quarts à chaque arrivée
+  skinView(skinMine()); skinRefresh(); shopSetTab(SHOP.tab); SKV.W = 0; SKV.a = SK_POSE.a; SKV.lv = ''; SKV.dirty = true; // de trois quarts à chaque arrivée
   // vignettes des tenues : en tête de file (elles attendaient en fin de file, thumbsStart)
   if (!VTHUMB.ready) return;
   const want = skinListed().map((s) => 'skin:' + s).filter((k) => !VTHUMB.img[k]);

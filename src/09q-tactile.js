@@ -284,6 +284,7 @@ async function touchWake() {
    écran HTML (requestFullscreen). Sans API (iPhone), rien. */
 function touchFullscreen() {
   if (!TOUCH.on) return;
+  if (window.WARFRONT_NATIVE) return; // WKWebView is already immersive; HTML fullscreen shows a file-origin banner
   gpuLog('fullscreen + landscape requested');
   if (!document.fullscreenElement && document.documentElement.requestFullscreen) { try { LOCK.fsPending = document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); } catch (e) { /* ignoré */ } }
   try { const o = screen.orientation; if (o && o.lock) o.lock('landscape').catch(() => {}); } catch (e) { /* ignoré */ }

@@ -227,6 +227,7 @@ for (const [k, v] of [['sel', _t('Sélectionnée')], ['soon', _t('Bientôt')], [
 /* ---------- Options ---------- */
 const OPTS = [];
 function toggleFullscreen() {
+  if (window.WARFRONT_NATIVE) return; // the native shell is already full-screen; requesting HTML fullscreen exposes the local file path
   const r = document.documentElement;
   if (!document.fullscreenElement && r.requestFullscreen) r.requestFullscreen().catch(() => {}); else if (document.exitFullscreen) document.exitFullscreen();
 }
