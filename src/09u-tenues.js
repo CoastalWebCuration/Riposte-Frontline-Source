@@ -22,7 +22,7 @@ const SKV = { host: null, cv: null, ctx: null, a: 0.6, drag: null, dirty: true, 
 /* Toutes les tenues de l'écran : celles de base, puis celles de défi (06gc-tenues-defi.js) ; SKV.view : celle de l'aperçu (la tenue portée, ou une
    tenue de défi verrouillée que l'on regarde avant de l'avoir). Une tenue unique (06gd-tenue-unique.js) ne s'y ajoute que pour son propriétaire
    (skinListed) : les autres n'en voient ni la carte ni la vignette */
-const SKIN_ALL = SKIN_IDS.concat(SKIN_DEFI);
+const SKIN_ALL = SKIN_IDS.concat(SKIN_DEFI, SKIN_SHOP);
 const skinOwned = () => SKIN_UNIQUE.filter(skinUnlocked);
 const skinListed = () => SKIN_ALL.concat(skinOwned());
 const SK_AIM = new V3(0, 0.93, 0);
@@ -37,7 +37,23 @@ function shopOfferHtml(s, feature = false) {
 }
 function shopFeaturedHtml() {
   const premium = !!BP.data.premium;
-  return `<section class="shop-pass-card"><p class="bp-kicker">Level ${bpPlayerLevel()} · Season 01</p><h3>${premium ? 'Premium Active' : 'Battle Pass'}</h3><p>${premium ? `Tier ${bpTier()} · Level-ups grant +${BP.levelBonus} Battle Pass XP and speed up every reward.` : `Unlock twenty campaign tiers. Every player level grants +${BP.levelBonus} bonus Battle Pass XP.`}</p><div class="btns"><button class="btn primary" type="button" data-shop-tab="pass">View Battle Pass</button>${premium ? '' : `<span>${shopBond(BP_PREMIUM_COST)} to activate</span>`}</div></section><section class="shop-offers">${shopOfferHtml('nomad', true)}${shopOfferHtml('tempest')}${shopOfferHtml('void')}</section>`;
+  return `<section class="shop-pass-card"><p class="bp-kicker">Level ${bpPlayerLevel()} · Season 01</p><h3>${premium ? 'Premium Active' : 'Battle Pass'}</h3><p>${premium ? `Tier ${bpTier()} · Level-ups grant +${BP.levelBonus} Battle Pass XP and speed up every reward.` : `Outfits, wraps, companions and supply chests. Every player level grants +${BP.levelBonus} bonus Battle Pass XP.`}</p><div class="btns"><button class="btn primary" type="button" data-shop-tab="pass">View Battle Pass</button><button class="btn" type="button" data-shop-tab="chests">Open Chests</button>${premium ? '' : `<span>${shopBond(BP_PREMIUM_COST)} to activate</span>`}</div></section><section class="shop-offers">${shopOfferHtml('airborne', true)}${shopOfferHtml('winter')}${shopOfferHtml('officer')}</section>`;
+}
+function shopOutfitsHtml() { return ['assault'].concat(Object.keys(BP_SHOP_OFFERS)).map((s) => shopOfferHtml(s)).join(''); }
+function shopWrapsHtml() {
+  return Object.keys(BP_WRAP_OFFERS).map((id) => { const C = CAMOS[id], owned = bpOwnsWrap(id), equipped = bpSelectedWrap() === id, price = BP_WRAP_OFFERS[id];
+    return `<article class="shop-item wrap"><div class="shop-wrap-art" style="background-image:url(${camoSwatch(id)})"></div><div class="shop-item-copy"><p class="bp-kicker">Universal weapon wrap</p><h3>${esc(C.name)}</h3><p>Applies to every weapon on your next deployment.</p>${owned ? `<span class="shop-owned">${equipped ? 'Equipped' : 'Owned'}</span><button class="btn" type="button" data-shop-equip-wrap="${id}">${equipped ? 'Equipped' : 'Equip wrap'}</button>` : `${shopBond(price)}<button class="btn primary" type="button" data-shop-buy-wrap="${id}">Get wrap</button>`}</div></article>`;
+  }).join('');
+}
+function shopPetsHtml() {
+  return Object.keys(BP_PETS).map((id) => { const P = BP_PETS[id], owned = bpOwnsPet(id), equipped = bpSelectedPet() === id;
+    return `<article class="shop-item pet"><div class="shop-pet-art" aria-hidden="true">${P[1]}</div><div class="shop-item-copy"><p class="bp-kicker">Companion</p><h3>${esc(P[0])}</h3><p>${esc(P[2])} · Appears with you in the command menu.</p>${owned ? `<span class="shop-owned">${equipped ? 'Following' : 'Owned'}</span><button class="btn" type="button" data-shop-equip-pet="${id}">${equipped ? 'Following' : 'Choose companion'}</button>` : `${shopBond(P[3])}<button class="btn primary" type="button" data-shop-buy-pet="${id}">Recruit companion</button>`}</div></article>`;
+  }).join('');
+}
+function shopChestsHtml() {
+  return `<div class="chest-note"><b>Duplicate protection active.</b><span>Every chest awards an item you do not own. Published odds rebalance only when a category is complete.</span></div>` + Object.keys(BP_CHESTS).map((id) => { const C = BP_CHESTS[id];
+    return `<article class="shop-chest"><div class="shop-chest-art">${C.icon}</div><p class="bp-kicker">Supply drop</p><h3>${C.name}</h3><p>${C.odds}</p>${shopBond(C.cost)}<button class="btn primary" type="button" data-shop-chest="${id}">Open chest</button></article>`;
+  }).join('');
 }
 function shopPassHtml() {
   const tier = bpTier(), into = bpInto(), pct = tier >= BP.maxTier ? 1 : into / BP.xpPerTier, premium = !!BP.data.premium;
@@ -50,10 +66,10 @@ function shopSetStatus(message, error = false) {
   if (message) SHOP.timer = setTimeout(() => { SHOP.message = ''; if ($('shopStatus')) $('shopStatus').textContent = ''; }, 5000);
 }
 function shopSetTab(tab) {
-  if (!['featured', 'outfits', 'pass'].includes(tab)) tab = 'featured';
+  if (!['featured', 'outfits', 'wraps', 'pets', 'chests', 'pass'].includes(tab)) tab = 'featured';
   SHOP.tab = tab;
   for (const b of $$('.shop-tabs [data-shop-tab]')) b.classList.toggle('on', b.dataset.shopTab === tab);
-  $('shopFeatured').hidden = tab !== 'featured'; $('shopOutfits').hidden = tab !== 'outfits'; $('shopPass').hidden = tab !== 'pass';
+  for (const id of ['Featured', 'Outfits', 'Wraps', 'Pets', 'Chests', 'Pass']) $('shop' + id).hidden = tab !== id.toLowerCase();
   document.body.classList.toggle('sk-live', tab === 'outfits' && SKV.live);
   if (tab === 'outfits') { SKV.dirty = true; skinRefresh(); }
   shopRefresh();
@@ -62,6 +78,10 @@ function shopRefresh() {
   const wallet = $('shopBonds'); if (!wallet) return;
   wallet.textContent = String(bpBonds());
   $('shopFeatured').innerHTML = shopFeaturedHtml();
+  $('shopOutfitOffers').innerHTML = shopOutfitsHtml();
+  $('shopWraps').innerHTML = shopWrapsHtml();
+  $('shopPets').innerHTML = shopPetsHtml();
+  $('shopChests').innerHTML = shopChestsHtml();
   $('shopPass').innerHTML = shopPassHtml();
   const status = $('shopStatus'); if (status && SHOP.message) status.textContent = SHOP.message;
 }
@@ -71,8 +91,18 @@ function shopAction(target) {
   if (buy) { const result = bpBuySkin(buy.dataset.shopBuy); shopSetStatus(result.message, !result.ok); sfxUi(result.ok ? 'confirm' : 'error'); shopRefresh(); skinRefresh(); return true; }
   const wear = target.closest('[data-shop-wear]');
   if (wear) { skinPick(wear.dataset.shopWear); shopSetStatus(SKINS[wear.dataset.shopWear].name + ' equipped.'); sfxUi('confirm'); shopRefresh(); return true; }
+  for (const kind of ['wrap', 'pet']) {
+    const buyItem = target.closest(`[data-shop-buy-${kind}]`); if (buyItem) { const r = bpBuyCollectible(kind, buyItem.dataset['shopBuy' + kind[0].toUpperCase() + kind.slice(1)]); shopSetStatus(r.message, !r.ok); sfxUi(r.ok ? 'confirm' : 'error'); shopRefresh(); return true; }
+    const equip = target.closest(`[data-shop-equip-${kind}]`); if (equip) { const r = bpEquipCollectible(kind, equip.dataset['shopEquip' + kind[0].toUpperCase() + kind.slice(1)]); shopSetStatus(r.message, !r.ok); sfxUi(r.ok ? 'confirm' : 'error'); shopRefresh(); return true; }
+  }
+  const chest = target.closest('[data-shop-chest]');
+  if (chest) { const r = bpOpenChest(chest.dataset.shopChest); shopSetStatus(r.message, !r.ok); sfxUi(r.ok ? 'confirm' : 'error'); shopRefresh(); skinRefresh(); return true; }
   if (target.closest('[data-shop-pass]')) { const result = bpActivatePremium(); shopSetStatus(result.message, !result.ok); sfxUi(result.ok ? 'confirm' : 'error'); shopRefresh(); return true; }
   return false;
+}
+function bpPetRefresh() {
+  const el = $('petBuddy'); if (!el) return; const id = bpSelectedPet(), P = id && BP_PETS[id];
+  el.classList.toggle('on', !!P); el.innerHTML = P ? `<span>${P[1]}</span><b>${esc(P[0])}</b><small>${esc(P[2])}</small>` : '';
 }
 /* Matière d'aperçu d'une tenue (sans volume d'éclairage : aucune carte n'est chargée aux menus) ; teinte et bandes posées à chaque rendu */
 function skinPvMat(skin) { return SKV.mats[skin] || (SKV.mats[skin] = gearMaterial(skin, 'pv')); }
@@ -180,7 +210,7 @@ function skinAcct() {
 /* Une tenue de défi n'occupe la mémoire que tant qu'on la montre : géométries, matières, textures et soldat d'aperçu sont libérés quand ni le
    joueur, ni l'aperçu, ni un soldat, ni la killcam ne la portent (elle est refaite à la demande : soldierGeometry, soldierMaterial) */
 function skinRelease(s) {
-  if (!SKINS[s] || !(SKINS[s].defi || SKINS[s].owner) || s === skinMine() || s === SKV.view) return;
+  if (!SKINS[s] || !(SKINS[s].defi || SKINS[s].shop || SKINS[s].owner) || s === skinMine() || s === SKV.view) return;
   for (const e of entities) if (e.model && e.model.lod && e.model.lod.skin === s) return;
   if (KC.body && KC.body.lod && KC.body.lod.skin === s) return;
   const M = SKV.models[s]; if (M) { if (M.cloth) clothDetach(M); delete SKV.models[s]; }
@@ -191,7 +221,7 @@ function skinRelease(s) {
   for (const k of ['tp', 'fp']) { const T = GEAR.maps[s + k]; if (T) { T.map.dispose(); delete GEAR.maps[s + k]; } }
 }
 /* Début de partie : les tenues de défi que personne ne porte sont libérées */
-function skinTrim() { for (const s of SKIN_DEFI.concat(SKIN_UNIQUE)) skinRelease(s); }
+function skinTrim() { for (const s of SKIN_DEFI.concat(SKIN_SHOP, SKIN_UNIQUE)) skinRelease(s); }
 /* Tenue montrée par l'aperçu ; celle qu'on quitte est libérée si plus rien ne la montre */
 function skinView(s) { const old = SKV.view; SKV.view = s; SKV.dirty = true; if (old && old !== s) setTimeout(() => skinRelease(old), 0); }
 const SK_LOCK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3h1.5v11h-13V10zm2 0h6V7a3 3 0 0 0-6 0z"/></svg>';
@@ -201,27 +231,25 @@ const skinBar = (f) => `<span class="sk-pb"><i style="width:${Math.round(clamp(f
    défis ; celle qui est dans l'aperçu est marquée d'un filet clair, et le détail de ses défis s'affiche dans le bas de l'aperçu (skinInfoHtml) :
    la carte garde sa taille, rien ne bouge dans la liste */
 function skinCardHtml(s) {
-  const K = SKINS[s], cur = skinMine(), lock = !skinUnlocked(s), viewing = lock && SKV.view === s, D = K.defi ? defisOf(s) : [], done = D.filter((d) => defiDone(d.id)).length;
+  const K = SKINS[s], cur = skinMine(), lock = !skinUnlocked(s), viewing = lock && SKV.view === s;
   // verrouillée : le cadenas et l'avancement prennent la place du rôle (une carte de téléphone n'a que deux lignes)
   let tx = `<span class="cn">${K.name}</span>${!lock ? `<span class="cw">${K.role}</span>` : ''}`;
   if (s === cur) tx += `<span class="cb next">${_t('Choisie')}</span>`;
-  else if (lock) tx += `<span class="sk-lk">${SK_LOCK}${_t('Défis {0} / {1}', done, D.length)}</span>${skinBar(D.reduce((a, d) => a + defiCount(d.id) / d.goal, 0) / D.length)}`;
-  return `<button type="button" class="sk-card${lock ? ' locked' : ''}${viewing ? ' viewing' : ''}${K.defi ? ' defi' : ''}" role="option" data-skin="${s}" aria-selected="${s === cur}">${skinThumbImg(s)}<span class="sk-tx">${tx}</span></button>`;
+  else if (lock) tx += `<span class="sk-lk">${SK_LOCK}Available in Shop</span>`;
+  return `<button type="button" class="sk-card${lock ? ' locked' : ''}${viewing ? ' viewing' : ''}" role="option" data-skin="${s}" aria-selected="${s === cur}">${skinThumbImg(s)}<span class="sk-tx">${tx}</span></button>`;
 }
 /* Détail d'une tenue de défi verrouillée (nom, rôle, avancement, chaque défi avec sa barre) : dans le bas de l'aperçu de l'écran Tenues ;
    '' pour une tenue qu'on peut prendre */
 function skinInfoHtml(s) {
-  const K = SKINS[s]; if (!K || !K.defi || skinUnlocked(s)) return '';
-  const D = defisOf(s), done = D.filter((d) => defiDone(d.id)).length;
-  return `<div class="sk-info-h"><b>${K.name}</b><span class="sk-lk">${SK_LOCK}${_t('Défis {0} / {1}', done, D.length)}</span></div><span class="cw">${K.role}</span>`
-    + `<span class="sk-dl">${D.map((d) => { const n = defiCount(d.id), ok = n >= d.goal; return `<span class="sk-d${ok ? ' ok' : ''}"><span class="sk-dt"><b>${esc(d.label)}</b><em>${ok ? _t('Accompli') : `${n} / ${d.goal}`}</em></span>${skinBar(n / d.goal)}${d.hint && !ok ? `<small>${esc(d.hint)}</small>` : ''}</span>`; }).join('')}</span>`;
+  const K = SKINS[s]; if (!K || skinUnlocked(s)) return '';
+  return `<div class="sk-info-h"><b>${K.name}</b><span class="sk-lk">${SK_LOCK}Shop item</span></div><span class="cw">${K.role}</span><button class="btn primary" type="button" data-shop-buy="${s}">Get for ${BP_SHOP_OFFERS[s]} War Bonds</button>`;
 }
 /* Liste des tenues (cartes) : celles de base, puis celles de défi sous leur titre */
 function skinCardsHtml() {
   const own = skinOwned();
-  return SKIN_IDS.map(skinCardHtml).join('')
+  return SKIN_ALL.map(skinCardHtml).join('')
     + (own.length ? `<p class="sk-h">${_t('Tenue unique')}<span>${_t('Faite pour vous, personne d\u0027autre ne peut la porter')}</span></p>` + own.map(skinCardHtml).join('') : '')
-    + `<p class="sk-h">${_t('Tenues de défi')}<span>${_t('Relevez leurs défis pour les débloquer')}</span></p>` + SKIN_DEFI.map(skinCardHtml).join('');
+    ;
 }
 /* La classe choisie a changé d'arme depuis les vignettes : elles repassent dans la file (en tête), l'arme nouvelle en main */
 function skinThumbsCheck() {

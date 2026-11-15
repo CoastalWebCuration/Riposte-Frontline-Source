@@ -688,3 +688,22 @@ Object.assign(SKINS, {
 });
 /* Tenues de défi, dans l'ordre de l'écran Tenues */
 const SKIN_DEFI = ['nomad', 'tempest', 'verdant', 'raptor', 'void', 'gilet'];
+/* Shop-only variants reuse the full procedural soldier rigs while carrying their own palettes and identity. */
+function shopSkinVariant(base, name, role, seed, camoBase, gearTone, tone) {
+  const S = SKINS[base];
+  return Object.assign({}, S, {
+    name: _t(name), role: _t(role), seed, defi: false, shop: true,
+    camo: Object.assign({}, S.camo, { base: camoBase }),
+    gear: Object.assign({}, S.gear, gearTone), tone,
+    parts: Object.assign({}, S.parts),
+  });
+}
+Object.assign(SKINS, {
+  airborne: shopSkinVariant('assault', 'Airborne', 'Paratrooper field kit', 1229, '#596447', { vest: '#756449', pouch: '#807054', helm: '#4f5a3d', patch: '#273021' }, [[1.08, 1.1, 1.01], [0.45, 0.47, 0.44]]),
+  corpsman: shopSkinVariant('assault', 'Corpsman', 'Frontline medical detachment', 1297, '#8b826b', { vest: '#726c5b', pouch: '#ddd5bd', helm: '#d5d0bf', patch: '#a82e28', symc: '#f2eee1' }, [[1.12, 1.1, 1.05], [0.47, 0.46, 0.45]]),
+  tanker: shopSkinVariant('smg', 'Tanker', 'Armored crew assault rig', 1361, '#3d4337', { vest: '#30352d', pouch: '#484d40', helm: '#252a24', knit: '#20231f' }, [[1.22, 1.24, 1.18], [0.47, 0.49, 0.46]]),
+  resistance: shopSkinVariant('nomad', 'Resistance', 'Partisan sabotage fighter', 1423, '#655b49', { vest: '#4b4439', pouch: '#685946', scarf: '#6f2c29', patch: '#233b55' }, [[1.12, 1.08, 1.02], [0.46, 0.44, 0.42]]),
+  winter: shopSkinVariant('sniper', 'Winter Scout', 'Alpine reconnaissance whites', 1489, '#c1c5c1', { vest: '#9ca29d', pouch: '#b4b8b1', boot: '#5d6260', knit: '#d3d6d2' }, [[1.2, 1.22, 1.22], [0.51, 0.52, 0.53]]),
+  officer: shopSkinVariant('void', 'Field Officer', 'Command staff combat uniform', 1553, '#42483b', { vest: '#343a30', pouch: '#4f5547', metal: '#c6a25c', symc: '#d7bd76', glowc: '#d2aa55' }, [[1.42, 1.4, 1.3], [0.5, 0.49, 0.46]]),
+});
+const SKIN_SHOP = ['airborne', 'corpsman', 'tanker', 'resistance', 'winter', 'officer'];

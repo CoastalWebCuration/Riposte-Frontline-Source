@@ -57,6 +57,7 @@ function weaponLock(id) {
 }
 function attLock(wid, aid) { const L = ATT[aid].lvl, lv = wLevel(wid); return lv >= L ? '' : `${_t('Niveau {0} de l\u0027arme (niveau {1})', L, lv)}`; }
 function camoLock(wid, cid) {
+  if (typeof bpOwnsWrap === 'function' && bpOwnsWrap(cid)) return '';
   if (PREVIEW_HOST && (PREVIEW_CAMOS[wid] || []).includes(cid)) return '';
   const L = CAMOS[cid].lvl, lv = wLevel(wid);
   return lv >= L ? '' : `${_t('niveau {0} de l\u0027arme (niveau {1})', L, lv)}`;

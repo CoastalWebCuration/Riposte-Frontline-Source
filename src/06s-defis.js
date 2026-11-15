@@ -46,9 +46,10 @@ const defisOf = (skin) => DEFIS.filter((d) => d.skin === skin);
    unique (06gd-tenue-unique.js) pour le seul compte connecté qui la possède (nom d'utilisateur vérifié par le serveur, me) */
 function skinUnlocked(s) {
   const K = SKINS[s]; if (!K) return false;
+  if (s === 'assault') return true;
   if (typeof bpOwnsSkin === 'function' && bpOwnsSkin(s)) return true;
   if (K.owner) return !!(ACCT.user && String(ACCT.user.username).toLowerCase() === K.owner);
-  return !K.defi || defisOf(s).every((d) => defiDone(d.id));
+  return false;
 }
 /* La tenue du joueur : celle qu'il a choisie si elle est à sa disposition, sinon Assaut (choix d'un autre appareil, défis non accomplis ici) */
 function skinMine() { const s = skinId(Settings.skin); return skinUnlocked(s) ? s : 'assault'; }

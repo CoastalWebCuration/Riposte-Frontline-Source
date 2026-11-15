@@ -19,22 +19,31 @@ const BP = {
   busy: false,
   error: '',
   match: null,
-  data: { season: 1, xp: 0, levelXp: 0, claimed: [], matches: 0, wins: 0, premium: false, bonds: 1200, owned: [], modified_at: '' },
+  data: { season: 1, xp: 0, levelXp: 0, claimed: [], matches: 0, wins: 0, premium: false, bonds: 1200, owned: [], wraps: [], pets: [], wrap: '', pet: '', chests: 0, modified_at: '' },
 };
 const BP_TOKEN_KEY = 'warfront_coastal_id';
 const BP_SAVE_KEY = 'warfront_battle_pass';
 const BP_DEVICE_KEY = 'warfront_device_id';
 const BP_REWARDS = [
-  ['I', 'Enlistment Patch', 'Free emblem', false, 0], ['◆', '100 War Bonds', 'Premium currency', true, 100], ['III', 'Olive Drab', 'Weapon wrap', true, 0],
+  ['I', 'Enlistment Patch', 'Free emblem', false, 0], ['◆', '100 War Bonds', 'Premium currency', true, 100], ['III', 'Olive Drab', 'Weapon wrap', true, 0, 'wrap:foret'],
   ['IV', 'Airborne', 'Free player banner', false, 0], ['◆', '200 War Bonds', 'Premium currency', true, 200], ['VI', 'Pathfinder', 'Premium emblem', true, 0],
   ['VII', 'Supply Drop', 'Free reward crate', false, 0], ['◆', '200 War Bonds', 'Premium currency', true, 200], ['IX', 'Dog Tags', 'Premium calling card', true, 0],
-  ['X', 'Paratrooper', 'Premium outfit', true, 0], ['◆', '200 War Bonds', 'Premium currency', true, 200], ['XII', 'Night Raid', 'Free weapon wrap', false, 0],
+  ['X', 'Paratrooper', 'Premium outfit', true, 0, 'skin:airborne'], ['◆', '200 War Bonds', 'Premium currency', true, 200], ['XII', 'Night Raid', 'Free weapon wrap', false, 0, 'wrap:cobalt'],
   ['XIII', 'Liberator', 'Premium banner', true, 0], ['◆', '200 War Bonds', 'Premium currency', true, 200], ['XV', 'Battle Star', 'Free emblem', false, 0],
-  ['XVI', 'Steel Division', 'Premium calling card', true, 0], ['◆', '200 War Bonds', 'Premium currency', true, 200], ['XVIII', 'Victory Roll', 'Free weapon wrap', false, 0],
-  ['XIX', 'Veteran', 'Premium player title', true, 0], ['◆', '200 War Bonds', 'Premium currency + Ace outfit', true, 200],
+  ['XVI', 'Steel Division', 'Premium calling card', true, 0], ['◆', '200 War Bonds', 'Premium currency', true, 200], ['XVIII', 'Victory Roll', 'Free Holo weapon wrap', false, 0, 'wrap:holo'],
+  ['XIX', 'Veteran', 'Premium player title', true, 0], ['◆', '200 War Bonds', 'Premium currency + Field Officer outfit', true, 200, 'skin:officer'],
 ];
 const BP_PREMIUM_COST = 950;
-const BP_SHOP_OFFERS = { nomad: 800, tempest: 900, verdant: 1000, raptor: 1100, void: 1200, gilet: 700 };
+const BP_SHOP_OFFERS = { smg: 500, sniper: 650, shotgun: 600, nomad: 800, tempest: 900, verdant: 1000, raptor: 1100, void: 1200, gilet: 700, airborne: 900, corpsman: 750, tanker: 700, resistance: 850, winter: 1050, officer: 1250 };
+const BP_WRAP_OFFERS = { desert: 250, foret: 300, urbain: 300, neige: 350, tigre: 450, cobalt: 500, braise: 550, or: 800, diamant: 1000, holo: 1200 };
+const BP_PETS = {
+  scout: ['Scout', '🐕', 'Trench dog', 500], pigeon: ['Dispatch', '🕊', 'Carrier pigeon', 400], fox: ['Red', '🦊', 'Recon fox', 650], cat: ['Sarge', '🐈', 'Barracks cat', 450], hawk: ['Ace', '🦅', 'Airborne hawk', 700], turtle: ['Tank', '🐢', 'Armored mascot', 550],
+};
+const BP_CHESTS = {
+  field: { name: 'Field Supply Chest', icon: '▣', cost: 300, odds: '45% wrap · 35% pet · 20% outfit', weights: { wrap: 45, pet: 35, skin: 20 } },
+  arsenal: { name: 'Arsenal Chest', icon: '⌁', cost: 450, odds: '70% wrap · 20% outfit · 10% pet', weights: { wrap: 70, skin: 20, pet: 10 } },
+  officer: { name: 'Officer Chest', icon: '★', cost: 700, odds: '55% outfit · 25% pet · 20% wrap', weights: { skin: 55, pet: 25, wrap: 20 } },
+};
 
 function bpRead(key, fallback) {
   try { const v = JSON.parse(localStorage.getItem(key) || 'null'); return v || fallback; } catch (e) { return fallback; }
@@ -63,20 +72,28 @@ function bpPlayerLevel() { return bpLevelInfo().level; }
 function bpTokenSave(tokens) { BP.tokens = tokens || null; bpWrite(BP_TOKEN_KEY, BP.tokens); }
 function bpBonds() { return Math.max(0, Math.floor(Number(BP.data.bonds || 0))); }
 function bpOwnsSkin(s) { return Array.isArray(BP.data.owned) && BP.data.owned.includes(s); }
+function bpOwnsWrap(id) { return Array.isArray(BP.data.wraps) && BP.data.wraps.includes(id); }
+function bpOwnsPet(id) { return Array.isArray(BP.data.pets) && BP.data.pets.includes(id); }
+function bpSelectedWrap() { return bpOwnsWrap(BP.data.wrap) && CAMOS[BP.data.wrap] ? BP.data.wrap : ''; }
+function bpSelectedPet() { return bpOwnsPet(BP.data.pet) && BP_PETS[BP.data.pet] ? BP.data.pet : ''; }
 function bpPersist() {
   bpWrite(BP_SAVE_KEY, BP.data);
   if (BP.gamer) bpCloudSave();
   if (typeof acctChip === 'function') acctChip();
   if (typeof shopRefresh === 'function' && typeof UI !== 'undefined' && UI.screen === 'skins') shopRefresh();
+  if (typeof bpPetRefresh === 'function') bpPetRefresh();
 }
 function bpGrantRewards() {
-  if (!BP.data.premium) return 0;
   if (!Array.isArray(BP.data.claimed)) BP.data.claimed = [];
   let gained = 0;
   for (let i = 0; i < bpTier(); i++) {
-    const reward = BP_REWARDS[i], key = 's' + BP.season + '-t' + (i + 1) + '-bonds';
-    if (!reward[4] || BP.data.claimed.includes(key)) continue;
-    BP.data.claimed.push(key); gained += reward[4];
+    const reward = BP_REWARDS[i], eligible = !reward[3] || BP.data.premium, item = reward[5], key = 's' + BP.season + '-t' + (i + 1) + '-reward', oldBondKey = 's' + BP.season + '-t' + (i + 1) + '-bonds';
+    if (!eligible || (!reward[4] && !item) || BP.data.claimed.includes(key)) continue;
+    BP.data.claimed.push(key); if (!BP.data.claimed.includes(oldBondKey)) gained += reward[4] || 0;
+    if (item) {
+      const [kind, id] = item.split(':'), list = kind === 'skin' ? BP.data.owned : BP.data.wraps;
+      if (list && !list.includes(id)) list.push(id);
+    }
   }
   if (gained) BP.data.bonds = bpBonds() + gained;
   return gained;
@@ -97,6 +114,45 @@ function bpBuySkin(s) {
   if (!Array.isArray(BP.data.owned)) BP.data.owned = [];
   BP.data.owned.push(s); bpPersist();
   return { ok: true, message: SKINS[s].name + ' added to your Outfits.' };
+}
+function bpBuyCollectible(kind, id) {
+  const table = kind === 'wrap' ? BP_WRAP_OFFERS : null, pet = kind === 'pet' ? BP_PETS[id] : null;
+  const price = table ? table[id] : pet ? pet[3] : 0, owns = kind === 'wrap' ? bpOwnsWrap(id) : bpOwnsPet(id);
+  if (!price) return { ok: false, message: 'Offer unavailable.' };
+  if (owns) return { ok: true, message: 'Already owned.' };
+  if (bpBonds() < price) return { ok: false, message: 'Not enough War Bonds.' };
+  BP.data.bonds = bpBonds() - price;
+  BP.data[kind === 'wrap' ? 'wraps' : 'pets'].push(id); bpPersist();
+  return { ok: true, message: (kind === 'wrap' ? CAMOS[id].name + ' wrap' : BP_PETS[id][0]) + ' added to your collection.' };
+}
+function bpEquipCollectible(kind, id) {
+  if (kind === 'wrap' && bpOwnsWrap(id)) { BP.data.wrap = id; bpPersist(); return { ok: true, message: CAMOS[id].name + ' equipped on every weapon for your next deployment.' }; }
+  if (kind === 'pet' && bpOwnsPet(id)) { BP.data.pet = id; bpPersist(); return { ok: true, message: BP_PETS[id][0] + ' is now your companion.' }; }
+  return { ok: false, message: 'Item not owned.' };
+}
+function bpChestCandidates(kind) {
+  if (kind === 'skin') return Object.keys(BP_SHOP_OFFERS).filter((id) => SKINS[id] && !skinUnlocked(id));
+  if (kind === 'wrap') return Object.keys(BP_WRAP_OFFERS).filter((id) => !bpOwnsWrap(id));
+  return Object.keys(BP_PETS).filter((id) => !bpOwnsPet(id));
+}
+function bpRandom() {
+  if (crypto && crypto.getRandomValues) { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; }
+  return Math.random();
+}
+function bpOpenChest(id) {
+  const chest = BP_CHESTS[id]; if (!chest) return { ok: false, message: 'Chest unavailable.' };
+  if (bpBonds() < chest.cost) return { ok: false, message: 'Not enough War Bonds.' };
+  const pools = Object.keys(chest.weights).map((kind) => ({ kind, items: bpChestCandidates(kind), weight: chest.weights[kind] })).filter((p) => p.items.length);
+  if (!pools.length) return { ok: false, message: 'You already own every chest item.' };
+  BP.data.bonds = bpBonds() - chest.cost;
+  const total = pools.reduce((n, p) => n + p.weight, 0); let roll = bpRandom() * total, pool = pools[pools.length - 1];
+  for (const p of pools) { roll -= p.weight; if (roll <= 0) { pool = p; break; } }
+  const item = pool.items[Math.floor(bpRandom() * pool.items.length)];
+  if (pool.kind === 'skin') BP.data.owned.push(item);
+  else BP.data[pool.kind === 'wrap' ? 'wraps' : 'pets'].push(item);
+  BP.data.chests = Math.max(0, Number(BP.data.chests || 0)) + 1; bpPersist();
+  const name = pool.kind === 'skin' ? SKINS[item].name : pool.kind === 'wrap' ? CAMOS[item].name + ' Wrap' : BP_PETS[item][0] + ' · ' + BP_PETS[item][2];
+  return { ok: true, message: 'Chest opened: ' + name + '!', kind: pool.kind, item };
 }
 
 async function coastalRaw(route, method, body, token) {
@@ -142,6 +198,7 @@ async function bpCloudLoad() {
     const cloud = save.data.data;
     if (cloud && Number(cloud.season) === BP.season && Number(cloud.xp || 0) >= Number(BP.data.xp || 0)) BP.data = Object.assign({}, BP.data, cloud);
   }
+  bpGrantRewards();
   bpWrite(BP_SAVE_KEY, BP.data);
   bpApplyIdentity(me.data);
   return true;
@@ -166,15 +223,18 @@ async function bpInit() {
   BP.data.levelXp = Math.max(0, Math.floor(Number(BP.data.levelXp || 0)));
   if (!Array.isArray(BP.data.claimed)) BP.data.claimed = [];
   if (!Array.isArray(BP.data.owned)) BP.data.owned = [];
+  if (!Array.isArray(BP.data.wraps)) BP.data.wraps = [];
+  if (!Array.isArray(BP.data.pets)) BP.data.pets = [];
   BP.data.bonds = bpBonds();
-  if (bpGrantRewards()) bpWrite(BP_SAVE_KEY, BP.data);
+  const claimCount = BP.data.claimed.length, rewardBonds = bpGrantRewards();
+  if (rewardBonds || BP.data.claimed.length !== claimCount) bpWrite(BP_SAVE_KEY, BP.data);
   BP.tokens = bpRead(BP_TOKEN_KEY, null);
   ACCT.state = BP.tokens ? 'init' : 'ready';
   if (BP.tokens) {
     const ok = await bpCloudLoad();
     if (!ok) { BP.error = 'Your Coastal ID session expired. Sign in again.'; bpTokenSave(null); bpApplyIdentity(null); ACCT.state = 'ready'; }
   } else bpApplyIdentity(null);
-  acctChanged();
+  acctChanged(); if (typeof bpPetRefresh === 'function') bpPetRefresh();
 }
 async function bpLogin(email, password) {
   BP.busy = true; BP.error = ''; bpRender();

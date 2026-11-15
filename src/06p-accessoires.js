@@ -117,6 +117,7 @@ const WDEFS = {};
 /* Arme de base avec ses accessoires et son camouflage : l'arme nue est WEAPONS[id] lui-même */
 function weaponDef(id, att, camo) {
   const base = hasKey(WEAPONS, id) ? WEAPONS[id] : null; if (!base) return null;
+  if (typeof bpSelectedWrap === 'function' && bpSelectedWrap()) camo = bpSelectedWrap();
   att = attNormalize(base, att); camo = camo && hasKey(CAMOS, camo) ? camo : null;
   if (!att.length && !camo) return base;
   const key = gunKey(base.model, att, camo);
