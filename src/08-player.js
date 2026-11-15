@@ -48,6 +48,7 @@ function onKey(e, down) {
   if (KS.map.open && down) { ksMapKey(c); if (c !== 'Escape') { e.preventDefault(); return; } }
   const was = KEYS[c]; KEYS[c] = down;
   if (!down || was) { if (!down && c === 'KeyG') releaseNade(); if (!down && c === 'KeyF') knifeButton(false); return; }
+  if (planeDropActive()) { if (c === 'Space') planeDropAction(); return; }
   if (PILOT.d) return; // drone en vol : les touches ne servent qu'à le piloter (KEYS, lu par fpvPlayer)
   if (MECHA_P.me) { if (c === 'KeyE') mechaUse(); return; } // à bord du mecha : les touches le pilotent (mechaPilot), E fait descendre
   if (adsToggleMode() && ADS_UNAIM.has(c)) PL.adsWant = false; // visée en bascule : recharger, changer d'arme, courir la rangent
@@ -308,6 +309,7 @@ function updatePlayer(dt, now) {
   if (PAD.drive) padLook(dt); // manette (09qc-manette.js)
   recoilTick(dt, now, PL.pitch - pitch0); // retour de la visée après un tir ; ce que le joueur vient de reprendre à la main compte (07ca-recul.js)
   PL.pitch = clamp(PL.pitch, -1.5, 1.5);
+  if (planeDropUpdate(dt)) return; // insertion solo ; le combat reprend à l'atterrissage
   if (MECHA_P.me) { mechaPilot(dt, now); return; } // à bord du mecha (08g-mecha-pilote.js)
   if (PILOT.d) { fpvPlayer(dt, now); return; } // drone kamikaze : le regard et les déplacements le pilotent, le corps reste sur place (08e-fpv.js)
 

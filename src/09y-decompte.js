@@ -27,7 +27,7 @@ function cdLen() { const v = window.MATCH_COUNTDOWN; return v != null && v !== '
 /* Le départ n'est pas encore donné : personne ne bouge ni ne tire */
 function cdOn() { return !CD.done && (MATCH.cd > 0 || CD.wait); }
 /* La partie est figée : décompte du départ, ou migration de l'hôte en ligne (MIG, 09c-net.js) ; mêmes effets (joueur, bots, chrono) */
-function playHold() { return cdOn() || MIG.on; }
+function playHold() { return cdOn() || MIG.on || planeDropActive(); }
 
 /* Début de partie (startMatch) : l'hôte et le solo comptent tout de suite ; un invité attend l'instant fixé par l'hôte (cdNet) */
 function cdStart() {

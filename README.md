@@ -1,5 +1,17 @@
 <h1 align="center"><img src="assets/logo.webp" alt="Riposte: Frontline" width="640"></h1>
 
+## Plane-drop fork
+
+This fork adds a plane insertion to the start of solo matches. Press **Space** to jump, then press it again to open your parachute;
+use the movement controls to steer. The plane ejects you automatically at the end of its route, and the parachute opens automatically
+near the ground. Bots and the match clock wait until you land and the regular countdown ends. Normal first-person combat, respawns,
+maps, loadouts, and multiplayer use the original rules. Pause also pauses the insertion.
+
+Build with `python3 build.py`, then serve `dist/` with `python3 -m http.server 8765 --directory dist` and open
+`http://localhost:8765/riposte-frontline.html`. The plane drop is a local source modification, not an official Riposte release.
+The upstream license and asset notices below still apply. For development tests that need an immediate ground start, set
+`window.MATCH_PLANE_DROP = false` before starting a match, or call `startMatch({ planeDrop: false })`.
+
 **Riposte: Frontline** is a free first-person shooter played in the browser, on desktop and on phones, in the spirit of modern
 Call of Duty games: https://www.playriposte.com
 

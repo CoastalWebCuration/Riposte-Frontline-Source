@@ -481,6 +481,7 @@ function updateEnd(dt) {
 
 /* ---------- Déroulement du match ---------- */
 function startMatch(opt = {}) {
+  planeDropReset();
   gpuLog('match start');
   initAudio(); setAmbience(true); saveSettings(); applyQuality();
   // résolution dynamique : l'échelle reste la meilleure estimation, mais l'attente avant de remonter (doublée à chaque remontée ratée) repart de zéro
@@ -522,10 +523,13 @@ function startMatch(opt = {}) {
   PL.hsKills = 0; arsSessionReset(); acctMatchStart(); // jeton de partie du compte (09j-compte.js)
   skinTrim(); // tenues de défi que personne ne porte : libérées (09u-tenues.js)
   pfrStart(); // enregistreur de performances, avec « Afficher les performances » (09zo-perfs.js)
-  cdStart(); // « La partie commence dans 10 » : personne ne bouge avant le départ (09y-decompte.js)
+  // Solo : une seule insertion par partie, puis le décompte habituel au sol. Le réseau et les outils restent inchangés.
+  if (!MATCH.online && !ESSAI && !ESSAI_MECHA && opt.planeDrop !== false && window.MATCH_PLANE_DROP !== false) { cdClear(); planeDropStart(); }
+  else cdStart();
 }
 function endMatch() {
   if (MATCH.state === 'ended') return;
+  planeDropReset();
   pfrStop(); showLockPrompt(false);
   if (KC.active) { KC.active = false; $('killcam').classList.remove('show'); KC.body.root.visible = false; }
   MATCH.state = 'ended'; arsShowClear(); cdClear();
@@ -556,6 +560,7 @@ function endMatch() {
 }
 /* Retour aux menus : l'écran demandé, sinon le salon si on y est encore, sinon le menu principal */
 function toMenu(screen) {
+  planeDropReset();
   pfrStop(); acctMatchAbandon(); netLeaveMatch(); modeEnd(); arsShowClear();
   if (KC.active) { KC.active = false; $('killcam').classList.remove('show'); KC.body.root.visible = false; }
   kcReset(); MATCH.fin = null; finClear(); cdClear();
@@ -731,7 +736,7 @@ function matchTick(dt, bg) {
   uavTick(dt);
   if (!fin && !hold) modeUpdate(dt);
   pfrLap(3); updatePlayer(dt, t); pfrLap(0); // pfrLap : étapes de l'enregistreur de performances (09zo-perfs.js)
-  botsTick(dt, t); pfrLap(1);
+  if (!planeDropActive()) botsTick(dt, t); pfrLap(1);
   updateNades(dt); updateThrowKnives(dt); updateSmokes(dt); updateDrops(dt); updateProps(dt); pfrLap(2);
   updateKillstreak(dt); updateAircraft(dt);
   if (!bg) { drawTacMap(); if (ESSAI || ESSAI_MECHA) essaiTick(dt); updateHud(dt); }

@@ -14,6 +14,7 @@ async function openGame(o = {}) {
   await pg.addInitScript(`try{localStorage.setItem('dc_settings', ${JSON.stringify(JSON.stringify(settings))})}catch(e){}`);
   if (o.mobile && !o.pwa) await pg.addInitScript(`try{localStorage.setItem('dc_pwa_ok', String(Date.now()))}catch(e){}`); // sur téléphone, le jeu ne démarre pas sans installation (09r-pwa.js) : o.pwa laisse venir la fenêtre d'installation
   // décompte du départ (src/09y-decompte.js) : coupé, les outils déploient puis jouent tout de suite ; o.countdown : sa durée en secondes (true : celle du jeu)
+  if (!o.planeDrop) await pg.addInitScript('window.MATCH_PLANE_DROP = false'); // les contrôles existants commencent au sol
   if (o.countdown !== true) await pg.addInitScript(`window.MATCH_COUNTDOWN = ${JSON.stringify(o.countdown === undefined ? 0 : +o.countdown)}`);
   if (o.init) await pg.addInitScript(o.init); // o.init : script exécuté avant la page (simuler le mode application, par exemple)
   const logs = [];
