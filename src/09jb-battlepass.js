@@ -11,13 +11,15 @@ const BP = {
   season: 1,
   maxTier: 20,
   xpPerTier: 1000,
+  maxLevel: 100,
+  levelBonus: 250,
   tokens: null,
   gamer: null,
   revision: 0,
   busy: false,
   error: '',
   match: null,
-  data: { season: 1, xp: 0, claimed: [], matches: 0, wins: 0, premium: false, bonds: 1200, owned: [], modified_at: '' },
+  data: { season: 1, xp: 0, levelXp: 0, claimed: [], matches: 0, wins: 0, premium: false, bonds: 1200, owned: [], modified_at: '' },
 };
 const BP_TOKEN_KEY = 'warfront_coastal_id';
 const BP_SAVE_KEY = 'warfront_battle_pass';
@@ -48,6 +50,16 @@ function bpDevice() {
 }
 function bpTier() { return Math.min(BP.maxTier, 1 + Math.floor(Math.max(0, BP.data.xp) / BP.xpPerTier)); }
 function bpInto() { return bpTier() >= BP.maxTier ? BP.xpPerTier : Math.max(0, BP.data.xp) % BP.xpPerTier; }
+/* Career level is permanent across seasons. Every level reached also grants a burst of seasonal Battle Pass XP. */
+function bpLevelXpFor(level) { return level <= 1 ? 0 : Math.round(250 * Math.pow(level - 1, 1.6)); }
+function bpLevelInfo(xp = BP.data.levelXp) {
+  xp = Math.max(0, Math.floor(Number(xp || 0)));
+  let level = 1;
+  while (level < BP.maxLevel && xp >= bpLevelXpFor(level + 1)) level++;
+  const floor = bpLevelXpFor(level), ceiling = level < BP.maxLevel ? bpLevelXpFor(level + 1) : floor;
+  return { level, xp, into: xp - floor, need: ceiling > floor ? ceiling - floor : 0 };
+}
+function bpPlayerLevel() { return bpLevelInfo().level; }
 function bpTokenSave(tokens) { BP.tokens = tokens || null; bpWrite(BP_TOKEN_KEY, BP.tokens); }
 function bpBonds() { return Math.max(0, Math.floor(Number(BP.data.bonds || 0))); }
 function bpOwnsSkin(s) { return Array.isArray(BP.data.owned) && BP.data.owned.includes(s); }
@@ -115,7 +127,7 @@ function bpApplyIdentity(gamer) {
   if (!gamer) { acctForget(); return; }
   ACCT.state = 'ready';
   ACCT.user = { username: 'coastal-' + gamer.user_id, displayName: gamer.gamer_tag, avatar: 0, avatarUrl: gamer.avatar_url || '', hasRecovery: true, coastal: true };
-  ACCT.level = { level: bpTier(), xp: BP.data.xp, into: bpInto(), need: BP.xpPerTier };
+  ACCT.level = bpLevelInfo();
   ACCT.stats = ACCT.stats || { kills: 0, deaths: 0, wins: BP.data.wins, matches: BP.data.matches, assists: 0, hits: 0, shots: 0, headshots: 0, bestStreak: 0, seconds: 0 };
   acctHintSet({ u: ACCT.user.username, n: ACCT.user.displayName, l: bpTier(), a: 0, on: true });
 }
@@ -147,7 +159,11 @@ async function bpCloudSave() {
   }
 }
 async function bpInit() {
-  BP.data = Object.assign({}, BP.data, bpRead(BP_SAVE_KEY, null) || {});
+  const saved = bpRead(BP_SAVE_KEY, null);
+  BP.data = Object.assign({}, BP.data, saved || {});
+  // Saves made before career levels inherit their earned pass XP, so existing players never restart at level one.
+  if (!saved || !Object.prototype.hasOwnProperty.call(saved, 'levelXp')) BP.data.levelXp = Math.max(0, Number(BP.data.xp || 0));
+  BP.data.levelXp = Math.max(0, Math.floor(Number(BP.data.levelXp || 0)));
   if (!Array.isArray(BP.data.claimed)) BP.data.claimed = [];
   if (!Array.isArray(BP.data.owned)) BP.data.owned = [];
   BP.data.bonds = bpBonds();
@@ -186,6 +202,10 @@ function bpRewardsHtml() {
     return '<article class="bp-tier ' + (owned ? 'on ' : '') + (n === tier ? 'now ' : '') + (premium ? 'premium ' : 'free ') + '"><span class="n">Tier ' + n + '</span>' + (owned ? '' : '<span class="lock">◆</span>') + '<span class="bp-lane">' + (premium ? 'Premium' : 'Free') + '</span><span class="ico">' + r[0] + '</span><b>' + esc(r[1]) + '</b><small>' + esc(r[2]) + '</small></article>';
   }).join('');
 }
+function bpLevelPanelHtml() {
+  const level = bpLevelInfo(), pct = level.need ? level.into / level.need : 1;
+  return '<section class="bp-level"><div class="bp-level-badge"><span>Player level</span><b>' + level.level + '</b></div><div><p class="bp-kicker">Permanent career progression</p><h3>Level ' + level.level + '</h3><p>Match XP raises your level. Every level-up injects <b>+' + BP.levelBonus + ' XP</b> into the current Battle Pass.</p><div class="bp-progress" role="progressbar" aria-valuemin="0" aria-valuemax="' + level.need + '" aria-valuenow="' + level.into + '"><i style="transform:scaleX(' + pct + ')"></i></div><div class="bp-progress-copy"><span>' + level.into + ' / ' + (level.need || level.into) + ' career XP</span><span>' + (level.need ? 'Level ' + (level.level + 1) + ' next' : 'Maximum level') + '</span></div></div></section>';
+}
 function bpRender() {
   const body = $('acBody'), sub = $('acSub'); if (!body) return;
   sub.textContent = 'Season 01 · European Theater';
@@ -196,7 +216,7 @@ function bpRender() {
     return;
   }
   const tier = bpTier(), into = bpInto(), pct = tier >= BP.maxTier ? 1 : into / BP.xpPerTier;
-  body.innerHTML = '<section class="bp-hero"><div><p class="bp-kicker">Season 01 · European Theater</p><h3>Battle Pass</h3><p>Deploy, survive and fight through twenty campaign tiers. Progress is attached to ' + esc(BP.gamer.gamer_tag) + ' through Coastal ID.</p><div class="bp-progress" role="progressbar" aria-valuemin="0" aria-valuemax="' + BP.xpPerTier + '" aria-valuenow="' + into + '"><i style="transform:scaleX(' + pct + ')"></i></div><div class="bp-progress-copy"><span>' + into + ' / ' + BP.xpPerTier + ' XP</span><span>' + (tier >= BP.maxTier ? 'Season complete' : 'Tier ' + (tier + 1) + ' next') + '</span></div></div><div class="bp-rank"><span>' + (BP.data.premium ? 'Premium active' : 'Free pass') + '</span><b>' + tier + '</b><span>' + bpBonds() + ' War Bonds</span></div></section><section><p class="lbl">Campaign rewards</p><div class="bp-track">' + bpRewardsHtml() + '</div></section><section class="bp-id"><div><p class="bp-kicker">Coastal ID connected</p><h3>' + esc(BP.gamer.gamer_tag) + '</h3><p>' + Number(BP.gamer.friend_count || 0) + ' friends · Progress synced across devices</p></div><button class="btn" id="bpOut" type="button">Sign out</button></section>';
+  body.innerHTML = bpLevelPanelHtml() + '<section class="bp-hero"><div><p class="bp-kicker">Season 01 · European Theater</p><h3>Battle Pass</h3><p>Deploy, survive and fight through twenty campaign tiers. Progress is attached to ' + esc(BP.gamer.gamer_tag) + ' through Coastal ID.</p><div class="bp-progress" role="progressbar" aria-valuemin="0" aria-valuemax="' + BP.xpPerTier + '" aria-valuenow="' + into + '"><i style="transform:scaleX(' + pct + ')"></i></div><div class="bp-progress-copy"><span>' + into + ' / ' + BP.xpPerTier + ' Battle Pass XP</span><span>' + (tier >= BP.maxTier ? 'Season complete' : 'Tier ' + (tier + 1) + ' next') + '</span></div></div><div class="bp-rank"><span>' + (BP.data.premium ? 'Premium tier' : 'Free tier') + '</span><b>' + tier + '</b><span>' + bpBonds() + ' War Bonds</span></div></section><section><p class="lbl">Campaign rewards</p><div class="bp-track">' + bpRewardsHtml() + '</div></section><section class="bp-id"><div><p class="bp-kicker">Coastal ID connected</p><h3>' + esc(BP.gamer.gamer_tag) + '</h3><p>' + Number(BP.gamer.friend_count || 0) + ' friends · Level and Battle Pass synced across devices</p></div><button class="btn" id="bpOut" type="button">Sign out</button></section>';
   $('bpOut').addEventListener('click', bpLogout);
 }
 function bpRefreshScreen() { bpRender(); }
@@ -209,15 +229,17 @@ async function bpMatchEnd(result, show) {
   const m = BP.match; BP.match = null; ACCT.match = null;
   if (!m) return;
   const me = PL.ent || {}, base = 150, combat = Math.min(600, Math.max(0, Number(me.kills || 0)) * 35 + Math.floor(Math.max(0, Number(me.score || 0)) / 20)), win = result === 'win' ? 250 : 0;
-  const gained = base + combat + win;
-  BP.data.xp = Math.max(0, Number(BP.data.xp || 0)) + gained;
+  const gained = base + combat + win, oldLevel = bpPlayerLevel();
+  BP.data.levelXp = Math.max(0, Number(BP.data.levelXp || 0)) + gained;
+  const level = bpLevelInfo(), levelsUp = Math.max(0, level.level - oldLevel), passGained = gained + levelsUp * BP.levelBonus;
+  BP.data.xp = Math.max(0, Number(BP.data.xp || 0)) + passGained;
   BP.data.matches = Math.max(0, Number(BP.data.matches || 0)) + 1;
   if (result === 'win') BP.data.wins = Math.max(0, Number(BP.data.wins || 0)) + 1;
   bpGrantRewards(); bpWrite(BP_SAVE_KEY, BP.data); bpApplyIdentity(BP.gamer); acctChip();
   if (BP.gamer) bpCloudSave();
   const box = $('endXp');
   if (show && box && MATCH.state === 'ended') {
-    box.innerHTML = endXpHtml({ xp: gained, level: bpTier(), into: bpInto(), need: BP.xpPerTier, up: 0, notes: ['Battle Pass · Season 01', BP.gamer ? 'Synced with Coastal ID' : 'Saved on this device'] });
+    box.innerHTML = endXpHtml({ xp: gained, level: level.level, into: level.into, need: level.need, up: levelsUp, notes: ['+' + passGained + ' Battle Pass XP' + (levelsUp ? ' · includes +' + (levelsUp * BP.levelBonus) + ' level bonus' : ''), 'Battle Pass tier ' + bpTier(), BP.gamer ? 'Synced with Coastal ID' : 'Saved on this device'] });
     box.classList.remove('hidden');
   }
 }

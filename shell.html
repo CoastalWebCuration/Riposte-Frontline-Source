@@ -193,6 +193,12 @@ body.sk-live #ui[data-screen="skins"] .ui-shade { background: none; } /* écran 
 .bp-progress { height: 9px; overflow: hidden; background: rgba(0,0,0,.48); border: 1px solid var(--line); }
 .bp-progress i { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, #7e693b, var(--acc-hi)); transform-origin: left; }
 .bp-progress-copy { display: flex; justify-content: space-between; gap: 12px; margin-top: 7px; color: var(--dim); font-size: 15px; }
+.bp-level { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 24px; align-items: center; padding: 20px 24px; background: linear-gradient(115deg, rgba(10,18,18,.96), rgba(20,34,30,.9)); border: 1px solid rgba(112,191,178,.38); box-shadow: var(--shadow); }
+.bp-level h3 { margin: 0 0 5px; font: 400 34px/1 var(--stencil); color: #b9ddd5; }
+.bp-level p { margin: 5px 0 12px; color: var(--dim); }
+.bp-level-badge { display: grid; place-items: center; align-content: center; min-height: 126px; border: 1px solid rgba(112,191,178,.42); background: rgba(6,12,12,.5); text-align: center; }
+.bp-level-badge span { color: #9fd0c5; font-size: 12px; font-weight: 700; letter-spacing: .17em; text-transform: uppercase; }
+.bp-level-badge b { color: #c8e5df; font: 400 68px/.9 var(--stencil); }
 .bp-track { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(150px, 1fr); gap: 8px; overflow-x: auto; padding: 4px 2px 12px; scrollbar-width: thin; }
 .bp-tier { position: relative; min-height: 176px; padding: 14px; background: rgba(15,18,13,.9); border: 1px solid var(--line); }
 .bp-tier.on { border-color: var(--acc-line); background: linear-gradient(150deg, rgba(184,155,90,.22), rgba(15,18,13,.92) 62%); }
@@ -211,7 +217,7 @@ body.sk-live #ui[data-screen="skins"] .ui-shade { background: none; } /* écran 
 .bp-coastal { padding: 26px; background: linear-gradient(145deg, rgba(21,33,31,.96), rgba(12,18,17,.96)); border: 1px solid rgba(112,191,178,.38); }
 .bp-coastal h3 { margin: 0 0 10px; font: 400 clamp(34px, 5vw, 58px)/1 var(--stencil); color: #9fd0c5; }
 .bp-coastal p { color: var(--dim); font-size: 18px; line-height: 1.45; }
-@media (max-width: 820px) { .bp-hero, .bp-auth { grid-template-columns: 1fr; } .bp-hero { padding: 22px; } .bp-rank { justify-self: stretch; } }
+@media (max-width: 820px) { .bp-hero, .bp-auth { grid-template-columns: 1fr; } .bp-hero { padding: 22px; } .bp-rank { justify-self: stretch; } .bp-level { grid-template-columns: 100px minmax(0, 1fr); padding: 16px; } .bp-level-badge { min-height: 100px; } .bp-level-badge b { font-size: 52px; } }
 /* invitation reçue dans le salon d'un ami (09ta-amis.js) : un encart à droite, sous la barre du haut (la puce du profil au menu principal),
    au-dessus de tous les menus ; message bref en bas */
 .ami-invite { position: absolute; right: clamp(22px, 4.5vw, 72px); top: calc(clamp(18px, 3.2vh, 34px) + 80px); z-index: 30; display: flex; flex-direction: column; align-items: stretch; gap: 10px; width: min(380px, calc(100vw - 40px)); padding: 12px 14px 14px; background: var(--panel-2); border: 1px solid var(--line-2); border-top: 3px solid var(--acc); box-shadow: var(--shadow); }

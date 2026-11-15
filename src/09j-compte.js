@@ -89,13 +89,13 @@ function acctAvatarFallback(box, u, level) {
 }
 function acctChip() {
   const chip = $('acctChip'); if (!chip) return;
-  const u = ACCT.user, lv = ACCT.level ? ACCT.level.level : (typeof bpTier === 'function' ? bpTier() : 1);
+  const u = ACCT.user, lv = ACCT.level ? ACCT.level.level : (typeof bpPlayerLevel === 'function' ? bpPlayerLevel() : 1), tier = typeof bpTier === 'function' ? bpTier() : 1;
   chip.classList.toggle('out', !u);
   $('acctAv').innerHTML = acctAvatar(u, lv);
   acctAvatarFallback($('acctAv'), u, lv);
   $('acctName').textContent = u ? u.displayName : 'Battle Pass';
-  $('acctSub').textContent = u ? 'Tier ' + lv + ' · Coastal ID' : 'Connect Coastal ID';
-  chip.setAttribute('aria-label', u ? 'Battle Pass for ' + u.displayName + ', tier ' + lv : 'Battle Pass, connect Coastal ID');
+  $('acctSub').textContent = u ? 'Level ' + lv + ' · Tier ' + tier : 'Level ' + lv + ' · Tier ' + tier;
+  chip.setAttribute('aria-label', u ? u.displayName + ', level ' + lv + ', Battle Pass tier ' + tier : 'Level ' + lv + ', Battle Pass tier ' + tier + ', connect Coastal ID');
 }
 
 /* ---------- Multijoueur : compte obligatoire ---------- */

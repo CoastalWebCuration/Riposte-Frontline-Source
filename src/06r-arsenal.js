@@ -115,7 +115,8 @@ function levelOfXp(xp) { let l = 1; while (l < 100 && xp >= pxpForLevel(l + 1)) 
    déblocage ne se perd pas en changeant de situation) */
 function playerLevel() {
   const acct = typeof ACCT !== 'undefined' && ACCT.user && ACCT.level ? ACCT.level.level : 1;
-  return Math.max(acct, levelOfXp(ARS.px));
+  const career = typeof bpPlayerLevel === 'function' ? bpPlayerLevel() : 1;
+  return Math.max(acct, career, levelOfXp(ARS.px));
 }
 /* XP d'une partie jouée sans compte, avec les règles du serveur (api/_lib/progress.js, matchXp) ; appelé à la fin de la partie */
 function arsLocalXp(result) {
@@ -141,7 +142,8 @@ function arsLiveXp() {
 /* Niveau du joueur compte tenu de la partie en cours */
 function playerLevelLive() {
   const live = arsLiveXp(), acct = typeof ACCT !== 'undefined' && ACCT.user && ACCT.level ? ACCT.level.xp : -1;
-  return Math.max(playerLevel(), levelOfXp((acct >= 0 ? acct : ARS.px) + live));
+  const career = typeof BP !== 'undefined' && BP.data ? Number(BP.data.levelXp || 0) : -1;
+  return Math.max(playerLevel(), levelOfXp((acct >= 0 ? acct : career >= 0 ? career : ARS.px) + live));
 }
 /* Une fois par seconde en partie : annonce chaque niveau du joueur franchi (09n-armurerie.js, arsNotifyLevel) */
 function arsLevelTick(dt) {
