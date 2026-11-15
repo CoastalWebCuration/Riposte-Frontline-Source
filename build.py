@@ -201,6 +201,8 @@ for f in DECK:
     if not os.path.exists("assets/deck/"+f): raise SystemExit("assets/deck/"+f+" manquant (python3 tools/dev/deck_art.py pour les images)")
     shutil.copyfile("assets/deck/"+f,"dist/deck/"+f)
 shutil.copyfile("assets/icon/favicon.ico","dist/favicon.ico")  # /favicon.ico : chemin par défaut que les moteurs de recherche essaient
+os.makedirs("dist/pets", exist_ok=True)
+shutil.copyfile("assets/pets/military-companions.png", "dist/pets/military-companions.png")
 html=html.replace("__ICON_FAVICON96__",icons["favicon-96"]).replace("__ICON_FAVICON__",data_uri("assets/icon/favicon-64.png")).replace("__ICON_APPLE__",icons["apple-touch-icon"])
 print("icônes :",", ".join(icons))
 # Journal des mises à jour : du plus récent au plus ancien ; chaque publication en production y ajoute une entrée (voir README)

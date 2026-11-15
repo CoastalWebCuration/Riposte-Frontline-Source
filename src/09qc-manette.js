@@ -108,7 +108,7 @@ function padAction(act, down) {
 /* X : recharger (appui bref) ou ramasser l'arme au sol qui est à portée (maintenu PAD_HOLD s), comme dans les Call of Duty. Sans arme à portée, le rechargement part
    dès l'appui, sans attente ; avec une arme à portée, on attend de savoir : relâché avant PAD_HOLD, il recharge, tenu jusqu'au bout, il échange (padUseTick) */
 function padReloadUse(down) {
-  if (down) { if (DROP.cur || MECHA_P.me || mechaNear()) PAD.useT = 0; else startReload(); return; }
+  if (down) { if (SUPPLY.cur || DROP.cur || MECHA_P.me || mechaNear()) PAD.useT = 0; else startReload(); return; }
   if (PAD.useT >= 0 && PAD.useT < PAD_HOLD) startReload();
   PAD.useT = -1;
 }
@@ -118,6 +118,7 @@ function padUseTick(dt) {
   if (PAD.useT < PAD_HOLD) return;
   PAD.useT = PAD_HOLD + 1;
   if (mechaUse()) padRumble(0.7, 0.5, 140, true); // monter dans son mecha, ou en descendre
+  else if (SUPPLY.cur) supplyUse();
   else if (DROP.cur) { swapWithDrop(); padRumble(0.55, 0.35, 80, true); } else startReload(); // l'arme a disparu ou s'est éloignée pendant l'appui : on recharge
 }
 

@@ -181,7 +181,7 @@ body.sk-live #ui[data-screen="skins"] .ui-shade { background: none; } /* écran 
 .acct-tx small { display: block; color: var(--dim); font-size: 15px; }
 .pet-buddy { display: none; align-items: center; gap: 8px; min-width: 150px; padding: 7px 11px; background: rgba(10,14,11,.9); border: 1px solid var(--line-2); box-shadow: var(--shadow); }
 .pet-buddy.on { display: grid; grid-template-columns: 42px minmax(0, 1fr); }
-.pet-buddy span { grid-row: 1 / 3; display: grid; place-items: center; font-size: 32px; animation: petBob 2.4s ease-in-out infinite; }
+.pet-buddy span { grid-row: 1 / 3; display: block; width: 46px; height: 54px; animation: petBob 2.4s ease-in-out infinite; }
 .pet-buddy b { align-self: end; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
 .pet-buddy small { align-self: start; color: var(--dim); font-size: 11px; }
 @keyframes petBob { 50% { transform: translateY(-4px) rotate(2deg); } }
@@ -1051,7 +1051,8 @@ div.lb-foot { display: flex; justify-content: flex-end; }
 #shopOutfits .shop-catalog { margin-bottom: 22px; }
 .shop-item { min-height: 250px; display: grid; grid-template-rows: 125px 1fr; overflow: hidden; background: rgba(10,11,9,.86); border: 1px solid var(--line); }
 .shop-wrap-art { background: #24271f center / cover; }
-.shop-pet-art { display: grid; place-items: center; background: radial-gradient(circle, rgba(184,155,90,.26), rgba(12,15,11,.96) 68%); font-size: 72px; }
+.shop-pet-art { min-height: 145px; background-color: #10140f; }
+.pet-sprite { background-image: url(pets/military-companions.png); background-repeat: no-repeat; background-size: 600% auto; background-position: var(--pet-x, 0%) center; }
 .shop-item-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 14px; }
 .shop-item-copy h3, .shop-chest h3 { margin: 0; font: 400 25px/1 var(--stencil); text-transform: uppercase; }
 .shop-item-copy p, .shop-chest p { margin: 0; color: var(--dim); font-size: 14px; }
@@ -1062,6 +1063,36 @@ div.lb-foot { display: flex; justify-content: flex-end; }
 .shop-chest { min-height: 330px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 20px; background: linear-gradient(150deg, rgba(47,48,31,.96), rgba(9,11,8,.98)); border: 1px solid var(--acc-line); box-shadow: var(--shadow); }
 .shop-chest-art { align-self: stretch; display: grid; place-items: center; height: 150px; color: var(--acc-hi); background: radial-gradient(circle, rgba(184,155,90,.28), transparent 68%); font: 400 86px/1 var(--stencil); }
 .shop-chest .btn { width: 100%; margin-top: auto; }
+.chest-opening { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 20px; background: radial-gradient(circle at center, rgba(103,84,38,.3), rgba(0,0,0,.97) 62%); opacity: 0; transition: opacity .25s; }
+.chest-opening[hidden] { display: none; }
+.chest-opening.armed { opacity: 1; }
+.chest-opening-stage { width: min(680px, 94vw); padding:18px 24px 22px; text-align: center; perspective: 1000px; background:linear-gradient(145deg,rgba(25,29,20,.96),rgba(7,9,7,.98)); border:1px solid var(--acc-line); box-shadow:0 24px 80px #000; }
+.chest-opening-stage h2 { margin: 0; font: 400 clamp(34px, 6vw, 60px)/1 var(--stencil); text-transform: uppercase; }
+.field-crate { position: relative; width: 330px; height: 240px; margin: 20px auto 0; transform-style: preserve-3d; transform: rotateX(-8deg); }
+.field-crate-box, .field-crate-lid { position: absolute; left: 25px; width: 280px; background: linear-gradient(135deg, #596347, #303727 65%, #1d231a); border: 5px solid #171b14; box-shadow: inset 0 0 0 7px #8f7844, 0 18px 35px rgba(0,0,0,.65); }
+.field-crate-box { bottom: 22px; height: 125px; }
+.field-crate-lid { bottom: 145px; height: 62px; transform-origin: 50% 100%; transition: transform .72s cubic-bezier(.2,.8,.15,1.15); }
+.field-crate-box::before, .field-crate-box::after, .field-crate-lid::before, .field-crate-lid::after { content:""; position:absolute; top:0; bottom:0; width:18px; background:#9b8148; border:2px solid #342a18; }
+.field-crate-box::before, .field-crate-lid::before { left:48px; } .field-crate-box::after, .field-crate-lid::after { right:48px; }
+.field-crate-box i, .field-crate-lid i { position:absolute; left:0; right:0; top:46%; height:13px; background:#181c15; }
+.field-crate-box b, .field-crate-lid b { position:absolute; left:50%; top:50%; width:42px; height:34px; transform:translate(-50%,-50%); background:#d1aa55; border:4px solid #3b301c; box-shadow:0 0 18px rgba(241,200,107,.55); }
+.field-crate-box span { position:absolute; right:18px; bottom:13px; color:rgba(228,219,193,.45); font:400 24px/1 var(--stencil); }
+.field-crate-glow { position:absolute; left:50%; bottom:105px; width:250px; height:90px; transform:translateX(-50%) scale(.15); border-radius:50%; background:#f1c86b; filter:blur(25px); opacity:0; transition:opacity .35s, transform .65s; }
+.chest-opening.opening .field-crate-lid { transform:translateY(-4px) rotateX(-112deg); }
+.chest-opening.opening .field-crate { animation:crateKick .45s ease both; }
+.chest-opening.opening .field-crate-glow { opacity:.8; transform:translateX(-50%) scale(1.2); }
+@keyframes crateKick { 40% { transform:rotateX(-8deg) scale(1.06); } 100% { transform:rotateX(-8deg) scale(1); } }
+.chest-reward { min-height:110px; display:flex; align-items:center; justify-content:center; gap:18px; margin:0 auto 14px; opacity:0; transform:translateY(18px) scale(.96); transition:opacity .35s, transform .35s; }
+.chest-opening.revealed .chest-reward { opacity:1; transform:none; }
+.chest-reward-art { width:120px; height:110px; flex:none; background-color:#141811; background-position:center; background-size:cover; border:1px solid var(--acc-line); }
+.chest-reward-art.pet-sprite { background-size:600% auto; background-position:var(--pet-x, 0%) center; }
+.chest-reward-art.outfit img { width:100%; height:100%; object-fit:cover; }
+.chest-reward-copy { text-align:left; }
+.chest-reward-copy h3 { margin:0; color:var(--acc-hi); font:400 32px/1 var(--stencil); text-transform:uppercase; }
+.chest-reward-copy p { margin:5px 0; color:var(--dim); }
+.chest-scanning { color:var(--acc); font-weight:700; letter-spacing:.2em; }
+.chest-opening-stage > .btn { visibility:hidden; min-width:180px; }
+.chest-opening.revealed .chest-opening-stage > .btn { visibility:visible; }
 @media (max-width: 960px) { .shop-featured { grid-template-columns: 1fr; } .shop-offers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 720px) { .shop-toolbar { flex-direction: column; } .shop-tabs { overflow-x: auto; } .shop-tabs button { min-width: 110px; } .shop-wallet { border-left: 0; border-top: 1px solid var(--line); } .shop-chests { grid-template-columns: 1fr; } .chest-note { flex-direction: column; } .pet-buddy small { display: none; } .pet-buddy { min-width: 0; } }
 @media (max-height: 520px) { .shop-toolbar { padding: 4px; } .shop-tabs button { min-width: 110px; padding: 6px 12px; } .shop-wallet { min-width: 150px; padding: 4px 10px; } .shop-featured { grid-template-columns: minmax(240px, .72fr) minmax(0, 1.5fr); } .shop-pass-card { min-height: 240px; padding: 18px; } .shop-offer img { height: calc(var(--u) * 29); } }
@@ -2792,6 +2823,9 @@ body.touch #perf { top: auto; right: auto; left: var(--sl); bottom: var(--sb); }
     <div class="shop-panel shop-chests" id="shopChests" hidden></div>
     <div class="shop-panel shop-pass-view" id="shopPass" hidden></div>
   </section>
+  <div class="chest-opening" id="chestOpening" hidden role="dialog" aria-modal="true" aria-labelledby="chestOpenName">
+    <div class="chest-opening-stage"><p class="bp-kicker">Quartermaster supply issue</p><h2 id="chestOpenName">Field Supply Chest</h2><div class="field-crate" aria-hidden="true"><div class="field-crate-lid"><i></i><b></b></div><div class="field-crate-box"><i></i><b></b><span>WF</span></div><div class="field-crate-glow"></div></div><div class="chest-reward" id="chestReward"></div><button class="btn" id="chestClose" type="button">Return to Shop</button></div>
+  </div>
 
   <!-- Atelier de classe : arme, accessoires et camouflages d'une classe personnalisée (src/09n-armurerie.js, vitrine 3D : 09o-vitrine.js) -->
   <section class="scr fit" id="scr-arsenal">

@@ -262,6 +262,10 @@ function drawMinimap() {
     g.strokeStyle = 'rgba(0,0,0,0.75)'; g.lineWidth = 1; g.stroke(); g.restore();
   };
   const jam = ksJammed(e.team), sat = satOn(e.team);
+  if (!jam && typeof SUPPLY !== 'undefined') for (const c of SUPPLY.list) {
+    if (c.opened || hyp(c.root.position.x - e.pos.x, c.root.position.z - e.pos.z) > 32) continue;
+    const x = c.root.position.x * scale, z = c.root.position.z * scale; g.fillStyle = '#e3b95c'; g.fillRect(x - 4, z - 4, 8, 8); g.strokeStyle = 'rgba(0,0,0,.8)'; g.lineWidth = 1; g.strokeRect(x - 4, z - 4, 8, 8);
+  }
   for (const o of entities) {
     if (!o.alive || o === e || jam) continue; // brouillé par une IEM : aucun repère
     if (allied(o, e)) arrow(o, C.ally);
@@ -503,6 +507,7 @@ function startMatch(opt = {}) {
   if (MATCH.online) { PL.ent.team = NET.team; for (const e of entities) if (!e.isPlayer && !e.isRemote) { e.netBot = false; e.alive = false; e.respawnT = Infinity; e.model.root.visible = false; e.model.rag = null; } }
   else { PL.ent.team = 0; for (const e of entities) if (!e.isPlayer && !e.off) spawnEntity(e); }
   spawnEntity(PL.ent);
+  supplySpawn(); // walkable, separated combat-loot chests for this match
   soldierLookAll(); // alliés en clair, ennemis en sombre, d'après l'équipe du joueur (en ligne, il peut jouer Bravo)
   // mon camp (classe a : à gauche du chrono, en vert) et l'adverse (b : à droite, en rouge) ; en ligne, on peut jouer Bravo. En match à mort, la première
   // ligne est toujours la mienne (« Vous »), quelle que soit l'équipe d'origine

@@ -47,7 +47,7 @@ function shopWrapsHtml() {
 }
 function shopPetsHtml() {
   return Object.keys(BP_PETS).map((id) => { const P = BP_PETS[id], owned = bpOwnsPet(id), equipped = bpSelectedPet() === id;
-    return `<article class="shop-item pet"><div class="shop-pet-art" aria-hidden="true">${P[1]}</div><div class="shop-item-copy"><p class="bp-kicker">Companion</p><h3>${esc(P[0])}</h3><p>${esc(P[2])} · Appears with you in the command menu.</p>${owned ? `<span class="shop-owned">${equipped ? 'Following' : 'Owned'}</span><button class="btn" type="button" data-shop-equip-pet="${id}">${equipped ? 'Following' : 'Choose companion'}</button>` : `${shopBond(P[3])}<button class="btn primary" type="button" data-shop-buy-pet="${id}">Recruit companion</button>`}</div></article>`;
+    return `<article class="shop-item pet"><div class="shop-pet-art pet-sprite" style="--pet-x:${P[1] * 20}%" aria-hidden="true"></div><div class="shop-item-copy"><p class="bp-kicker">Companion</p><h3>${esc(P[0])}</h3><p>${esc(P[2])} · Appears with you in the command menu.</p>${owned ? `<span class="shop-owned">${equipped ? 'Following' : 'Owned'}</span><button class="btn" type="button" data-shop-equip-pet="${id}">${equipped ? 'Following' : 'Choose companion'}</button>` : `${shopBond(P[3])}<button class="btn primary" type="button" data-shop-buy-pet="${id}">Recruit companion</button>`}</div></article>`;
   }).join('');
 }
 function shopChestsHtml() {
@@ -96,14 +96,29 @@ function shopAction(target) {
     const equip = target.closest(`[data-shop-equip-${kind}]`); if (equip) { const r = bpEquipCollectible(kind, equip.dataset['shopEquip' + kind[0].toUpperCase() + kind.slice(1)]); shopSetStatus(r.message, !r.ok); sfxUi(r.ok ? 'confirm' : 'error'); shopRefresh(); return true; }
   }
   const chest = target.closest('[data-shop-chest]');
-  if (chest) { const r = bpOpenChest(chest.dataset.shopChest); shopSetStatus(r.message, !r.ok); sfxUi(r.ok ? 'confirm' : 'error'); shopRefresh(); skinRefresh(); return true; }
+  if (chest) { shopChestSequence(chest.dataset.shopChest); return true; }
   if (target.closest('[data-shop-pass]')) { const result = bpActivatePremium(); shopSetStatus(result.message, !result.ok); sfxUi(result.ok ? 'confirm' : 'error'); shopRefresh(); return true; }
   return false;
 }
 function bpPetRefresh() {
   const el = $('petBuddy'); if (!el) return; const id = bpSelectedPet(), P = id && BP_PETS[id];
-  el.classList.toggle('on', !!P); el.innerHTML = P ? `<span>${P[1]}</span><b>${esc(P[0])}</b><small>${esc(P[2])}</small>` : '';
+  el.classList.toggle('on', !!P); el.innerHTML = P ? `<span class="pet-sprite" style="--pet-x:${P[1] * 20}%"></span><b>${esc(P[0])}</b><small>${esc(P[2])}</small>` : '';
 }
+function shopChestRewardHtml(r) {
+  if (!r || !r.ok) return `<div class="chest-reward-copy"><p class="bp-kicker">Supply denied</p><h3>${esc(r ? r.message : 'Chest unavailable.')}</h3></div>`;
+  if (r.kind === 'pet') { const P = BP_PETS[r.item]; return `<div class="chest-reward-art pet-sprite" style="--pet-x:${P[1] * 20}%"></div><div class="chest-reward-copy"><p class="bp-kicker">Companion acquired</p><h3>${esc(P[0])}</h3><p>${esc(P[2])}</p></div>`; }
+  if (r.kind === 'wrap') return `<div class="chest-reward-art wrap" style="background-image:url(${camoSwatch(r.item)})"></div><div class="chest-reward-copy"><p class="bp-kicker">Weapon wrap acquired</p><h3>${esc(CAMOS[r.item].name)}</h3><p>Universal weapon finish</p></div>`;
+  return `<div class="chest-reward-art outfit">${skinThumbImg(r.item)}</div><div class="chest-reward-copy"><p class="bp-kicker">Outfit acquired</p><h3>${esc(SKINS[r.item].name)}</h3><p>${esc(SKINS[r.item].role)}</p></div>`;
+}
+function shopChestSequence(id) {
+  const C = BP_CHESTS[id], overlay = $('chestOpening'); if (!C || !overlay || overlay.classList.contains('active')) return;
+  if (bpBonds() < C.cost) { shopSetStatus('Not enough War Bonds.', true); sfxUi('error'); return; }
+  overlay.hidden = false; overlay.className = 'chest-opening active'; $('chestOpenName').textContent = C.name; $('chestReward').innerHTML = '<p class="chest-scanning">UNLOCKING FIELD CRATE...</p>';
+  sfxUi('click'); requestAnimationFrame(() => overlay.classList.add('armed'));
+  setTimeout(() => overlay.classList.add('opening'), 450);
+  setTimeout(() => { const r = bpOpenChest(id); $('chestReward').innerHTML = shopChestRewardHtml(r); overlay.classList.add('revealed'); sfxUi(r.ok ? 'confirm' : 'error'); shopRefresh(); skinRefresh(); }, 1250);
+}
+function shopChestClose() { const overlay = $('chestOpening'); if (!overlay || !overlay.classList.contains('revealed')) return; overlay.hidden = true; overlay.className = 'chest-opening'; }
 /* Matière d'aperçu d'une tenue (sans volume d'éclairage : aucune carte n'est chargée aux menus) ; teinte et bandes posées à chaque rendu */
 function skinPvMat(skin) { return SKV.mats[skin] || (SKV.mats[skin] = gearMaterial(skin, 'pv')); }
 /* Soldat d'aperçu d'une tenue (modèle détaillé), avec les mêmes os que les soldats du jeu ; S.gun porte l'arme (posée par skinPvPlace) */
@@ -285,6 +300,7 @@ function skinScreenInit() {
   SKV.cv.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); SKV.a += e.key === 'ArrowLeft' ? 0.15 : -0.15; SKV.dirty = true; } });
   $('skList').addEventListener('click', (e) => { const b = e.target.closest('.sk-card'); if (b) { sfxUi('click'); skinPick(b.dataset.skin); } });
   $('scr-skins').addEventListener('click', (e) => { if (shopAction(e.target)) e.preventDefault(); });
+  $('chestClose').addEventListener('click', shopChestClose);
 }
 /* Arrivée sur l'écran Tenues */
 function renderSkins() {

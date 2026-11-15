@@ -37,7 +37,7 @@ const BP_PREMIUM_COST = 950;
 const BP_SHOP_OFFERS = { smg: 500, sniper: 650, shotgun: 600, nomad: 800, tempest: 900, verdant: 1000, raptor: 1100, void: 1200, gilet: 700, airborne: 900, corpsman: 750, tanker: 700, resistance: 850, winter: 1050, officer: 1250 };
 const BP_WRAP_OFFERS = { desert: 250, foret: 300, urbain: 300, neige: 350, tigre: 450, cobalt: 500, braise: 550, or: 800, diamant: 1000, holo: 1200 };
 const BP_PETS = {
-  scout: ['Scout', '🐕', 'Trench dog', 500], pigeon: ['Dispatch', '🕊', 'Carrier pigeon', 400], fox: ['Red', '🦊', 'Recon fox', 650], cat: ['Sarge', '🐈', 'Barracks cat', 450], hawk: ['Ace', '🦅', 'Airborne hawk', 700], turtle: ['Tank', '🐢', 'Armored mascot', 550],
+  scout: ['Scout', 0, 'Trench dog', 500], pigeon: ['Dispatch', 1, 'Carrier pigeon', 400], fox: ['Red', 2, 'Recon fox', 650], cat: ['Sarge', 3, 'Barracks cat', 450], hawk: ['Ace', 4, 'Airborne eagle', 700], turtle: ['Tank', 5, 'Armored mascot', 550],
 };
 const BP_CHESTS = {
   field: { name: 'Field Supply Chest', icon: '▣', cost: 300, odds: '45% wrap · 35% pet · 20% outfit', weights: { wrap: 45, pet: 35, skin: 20 } },

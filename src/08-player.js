@@ -59,7 +59,7 @@ function onKey(e, down) {
   else if (c === 'KeyQ' && e.getModifierState && !e.getModifierState('Control')) quickSwap();
   else if (c === 'KeyF') knifeButton(true, true);
   else if (c === 'KeyG') cookNade();
-  else if (c === 'KeyE') { if (!mechaUse()) swapWithDrop(); } // à portée de son mecha : on monte à bord
+  else if (c === 'KeyE') { if (!mechaUse() && !supplyUse()) swapWithDrop(); } // mecha, caisse de ravitaillement, puis arme au sol
   else if (c === 'KeyC') { if (!trySlide()) PL.crouchToggle = !PL.crouchToggle; }
   else if (c === 'ControlLeft') trySlide();
   else if (c === 'Digit4') useKs(0);

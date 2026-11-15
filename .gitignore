@@ -3,6 +3,7 @@ __pycache__/
 *.png
 !assets/menu-bg-warfront.png
 !assets/logo-warfront.png
+!assets/pets/*.png
 !docs/*.png
 # icône du jeu : sources et fichiers publiés, à versionner (sinon absents en production)
 !assets/icon/*.png
