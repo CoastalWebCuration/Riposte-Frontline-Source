@@ -13,6 +13,13 @@ Build with `python3 build.py`, then serve `dist/` with `python3 -m http.server 8
 The upstream license and asset notices below still apply. For development tests that need an immediate ground start, set
 `window.MATCH_PLANE_DROP = false` before starting a match, or call `startMatch({ planeDrop: false })`.
 
+## Xcode / iOS
+
+Open `ios/Warfront1944.xcodeproj` in Xcode and run the **WARFRONT 1944** scheme on an iPhone or iPad simulator/device.
+The target is a landscape, full-screen SwiftUI and WKWebView shell. Its first build phase runs `python3 build.py`, then bundles the
+complete `dist/` directory into the application. The native bootstrap disables browser-only PWA installation prompts while preserving
+Coastal ID, local progress, WebGL rendering, audio and online connections.
+
 **WARFRONT 1944** is a World War II-themed browser shooter built from the open-source Riposte: Frontline codebase. The fork keeps
 the original combat and maps, removes class selection, and begins solo matches with an airborne insertion.
 

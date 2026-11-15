@@ -19,6 +19,7 @@
    Voir README, « Version mobile ».
    ========================================================================== */
 const PWA = { prompt: null, ios: false, standalone: false, wait: 0, gate: false, alt: false, done: false, start: null, title0: '', lead0: '' };
+const NATIVE_APP = !!window.WARFRONT_NATIVE;
 const PWA_BROWSER = 7 * 24 * 3600 * 1000, PWA_INSTALLED = 90 * 24 * 3600 * 1000, PWA_SALON = 30 * 60 * 1000;
 
 const pwaGet = (k) => { try { return +localStorage.getItem(k) || 0; } catch (e) { return 0; } };
@@ -29,7 +30,7 @@ function pwaStandalone() {
 const pwaInstalled = () => Date.now() - pwaGet('dc_pwa_in') < PWA_INSTALLED; // installé sur cet appareil (ou lancé depuis l'icône) depuis moins de 90 jours
 const pwaBrowserOk = () => Date.now() - pwaGet('dc_pwa_ok') < PWA_BROWSER; // dérogation en cours : jeu dans le navigateur accepté
 /* Faut-il rappeler l'installation (carte du menu) ? Écran tactile, hors application installée */
-const pwaCan = () => COARSE && !deckLooksLike() && !PWA.standalone && !pwaInstalled();
+const pwaCan = () => !NATIVE_APP && COARSE && !deckLooksLike() && !PWA.standalone && !pwaInstalled();
 const pwaMode = () => (PWA.done ? 'done' : PWA.prompt ? 'prompt' : PWA.ios ? 'ios' : PWA.gate && pwaInstalled() ? 'installed' : PWA.wait ? 'wait' : 'manual');
 
 /* Carte du menu principal : rappel discret, toujours là tant que le jeu n'est pas installé */
@@ -66,6 +67,7 @@ function pwaRender() {
 }
 /* Bloque le démarrage du jeu derrière la fenêtre d'installation (appelée par 99-start.js : start lance le jeu quand le joueur déroge) */
 function pwaGate(start) {
+  if (NATIVE_APP) return false;
   const q = new URLSearchParams(location.search);
   if (!COARSE || deckLooksLike() || PWA.standalone || pwaBrowserOk() || q.has('verif') || q.has('mdp') || q.has('navigateur') || q.has('diag') || q.has('essai') || q.has('outil')) return false;
   const salon = q.get('salon'); if (salon) { try { localStorage.setItem('dc_salon', JSON.stringify({ c: String(salon).slice(0, 8), t: Date.now() })); } catch (e) { /* ignoré */ } }
@@ -101,6 +103,7 @@ function pwaDone() {
   pwaCard();
 }
 function pwaInit() {
+  if (NATIVE_APP) { PWA.standalone = true; return; }
   PWA.standalone = pwaStandalone();
   if (PWA.standalone) pwaSet('dc_pwa_in'); // lancé depuis l'icône : on s'en souvient pour le navigateur du même téléphone
   PWA.ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
