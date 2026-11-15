@@ -179,6 +179,37 @@ body.sk-live #ui[data-screen="skins"] .ui-shade { background: none; } /* écran 
 .acct-tx b { display: block; font-size: 22px; line-height: 1.15; letter-spacing: .02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .acct-chip.out .acct-tx b { color: var(--acc); }
 .acct-tx small { display: block; color: var(--dim); font-size: 15px; }
+/* Battle Pass / Coastal ID: military dossier presentation replacing the old profile surface. */
+.acct-chip.bp .acct-av > span { background: linear-gradient(145deg, #b89b5a, #62512d); color: #11140f; }
+.bp-wrap { width: min(1180px, 100%); display: flex; flex-direction: column; gap: 18px; }
+.bp-hero { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(260px, .7fr); gap: 26px; min-height: 220px; padding: 28px 32px; background: linear-gradient(120deg, rgba(26,31,23,.98), rgba(42,42,28,.9)); border: 1px solid var(--acc-line); box-shadow: var(--shadow); }
+.bp-hero::after { content: "01"; position: absolute; right: 22px; bottom: -42px; color: rgba(228,219,193,.055); font: 400 190px/.8 var(--stencil); }
+.bp-kicker { margin: 0 0 10px; color: var(--acc); font-size: 14px; font-weight: 700; letter-spacing: .28em; text-transform: uppercase; }
+.bp-hero h3 { position: relative; margin: 0; font: 400 clamp(42px, 6vw, 76px)/.9 var(--stencil); letter-spacing: .025em; }
+.bp-hero p { position: relative; max-width: 650px; color: var(--dim); font-size: 18px; line-height: 1.4; }
+.bp-rank { position: relative; z-index: 1; align-self: stretch; display: grid; place-items: center; align-content: center; padding: 20px; background: rgba(8,10,9,.52); border: 1px solid var(--line-2); text-align: center; }
+.bp-rank b { font: 400 72px/.85 var(--stencil); color: var(--acc); }
+.bp-rank span { color: var(--dim); font-weight: 700; letter-spacing: .2em; text-transform: uppercase; }
+.bp-progress { height: 9px; overflow: hidden; background: rgba(0,0,0,.48); border: 1px solid var(--line); }
+.bp-progress i { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, #7e693b, var(--acc-hi)); transform-origin: left; }
+.bp-progress-copy { display: flex; justify-content: space-between; gap: 12px; margin-top: 7px; color: var(--dim); font-size: 15px; }
+.bp-track { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(150px, 1fr); gap: 8px; overflow-x: auto; padding: 4px 2px 12px; scrollbar-width: thin; }
+.bp-tier { position: relative; min-height: 176px; padding: 14px; background: rgba(15,18,13,.9); border: 1px solid var(--line); }
+.bp-tier.on { border-color: var(--acc-line); background: linear-gradient(150deg, rgba(184,155,90,.22), rgba(15,18,13,.92) 62%); }
+.bp-tier.now { box-shadow: inset 0 3px 0 var(--acc); }
+.bp-tier .n { color: var(--mute); font-size: 13px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+.bp-tier .ico { display: grid; place-items: center; height: 76px; color: var(--acc); font: 400 42px/1 var(--stencil); }
+.bp-tier b { display: block; font-size: 19px; line-height: 1.05; }
+.bp-tier small { display: block; margin-top: 5px; color: var(--dim); font-size: 14px; }
+.bp-tier .lock { position: absolute; top: 12px; right: 12px; color: var(--mute); }
+.bp-id { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 18px 22px; background: rgba(12,15,11,.9); border: 1px solid var(--line); }
+.bp-id h3 { margin: 0; font: 400 28px/1 var(--stencil); }
+.bp-id p { margin: 5px 0 0; color: var(--dim); }
+.bp-auth { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 420px); gap: 20px; width: min(940px, 100%); }
+.bp-coastal { padding: 26px; background: linear-gradient(145deg, rgba(21,33,31,.96), rgba(12,18,17,.96)); border: 1px solid rgba(112,191,178,.38); }
+.bp-coastal h3 { margin: 0 0 10px; font: 400 clamp(34px, 5vw, 58px)/1 var(--stencil); color: #9fd0c5; }
+.bp-coastal p { color: var(--dim); font-size: 18px; line-height: 1.45; }
+@media (max-width: 820px) { .bp-hero, .bp-auth { grid-template-columns: 1fr; } .bp-hero { padding: 22px; } .bp-rank { justify-self: stretch; } }
 /* invitation reçue dans le salon d'un ami (09ta-amis.js) : un encart à droite, sous la barre du haut (la puce du profil au menu principal),
    au-dessus de tous les menus ; message bref en bas */
 .ami-invite { position: absolute; right: clamp(22px, 4.5vw, 72px); top: calc(clamp(18px, 3.2vh, 34px) + 80px); z-index: 30; display: flex; flex-direction: column; align-items: stretch; gap: 10px; width: min(380px, calc(100vw - 40px)); padding: 12px 14px 14px; background: var(--panel-2); border: 1px solid var(--line-2); border-top: 3px solid var(--acc); box-shadow: var(--shadow); }
@@ -2559,9 +2590,9 @@ body.touch #perf { top: auto; right: auto; left: var(--sl); bottom: var(--sb); }
       <button class="ibtn hidden" id="friendsBtn" type="button" data-go="friends" aria-label="Amis" title="Amis"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11.5a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Zm7.5 0a3.25 3.25 0 1 0 0-6.5 3.25 3.25 0 0 0 0 6.5ZM1.5 20c0-3.6 3.4-6.5 7.5-6.5s7.5 2.9 7.5 6.5v.5h-15V20Zm16.4.5c.07-.33.1-.66.1-1 0-2.2-1-4.2-2.6-5.5.5-.1 1-.2 1.6-.2 3.3 0 6 2.4 6 5.5v1.2h-5.1Z"/></svg><span>Amis</span><i class="nbadge hidden" id="friendsBadge">0</i></button>
       <button class="ibtn hidden" id="commBtn" type="button" data-go="community" aria-label="Communauté" title="Communauté"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 3h11A1.5 1.5 0 0 1 16 4.5v7a1.5 1.5 0 0 1-1.5 1.5H8l-4 3.4V13h-.5A1.5 1.5 0 0 1 2 11.5v-7A1.5 1.5 0 0 1 3.5 3Zm14 4h3A1.5 1.5 0 0 1 22 8.5v7a1.5 1.5 0 0 1-1.5 1.5H20v3.4L16 17h-5.5A1.5 1.5 0 0 1 9 15.5V15h6.5a2 2 0 0 0 2-2V7Z"/></svg><span>Communauté</span></button>
       <button class="ibtn hidden" id="notifBtn" type="button" data-go="notifs" aria-label="Notifications" title="Notifications"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a2.4 2.4 0 0 0 2.4-2.4H9.6A2.4 2.4 0 0 0 12 22Zm7-6.2V11a7 7 0 0 0-5.4-6.8V3.5a1.6 1.6 0 0 0-3.2 0v.7A7 7 0 0 0 5 11v4.8l-1.8 1.8v1h17.6v-1L19 15.8Z"/></svg><span>Notifications</span><i class="nbadge hidden" id="notifBadge">0</i></button>
-      <button class="acct-chip out" id="acctChip" type="button" data-go="profile" aria-label="Profil">
+      <button class="acct-chip bp out" id="acctChip" type="button" data-go="profile" aria-label="Battle Pass">
         <span class="acct-av" id="acctAv"></span>
-        <span class="acct-tx"><b id="acctName">Se connecter</b><small id="acctSub">Niveau, statistiques et multijoueur</small></span>
+        <span class="acct-tx"><b id="acctName">Battle Pass</b><small id="acctSub">Connect Coastal ID</small></span>
       </button>
     </div>
     <footer class="mfoot">
@@ -2612,10 +2643,10 @@ body.touch #perf { top: auto; right: auto; left: var(--sl); bottom: var(--sb); }
     </div>
   </section>
 
-  <!-- Profil : connexion, création de compte, niveau et statistiques (src/09j-compte.js) -->
+  <!-- Battle Pass: progression and shared Coastal ID identity. -->
   <section class="scr" id="scr-profile">
-    <header class="shead"><button class="back" type="button" data-back>Retour</button><div><h2>Profil</h2><p id="acSub">Compte et progression</p></div></header>
-    <div id="acBody" class="ac-wrap"></div>
+    <header class="shead"><button class="back" type="button" data-back>Back</button><div><h2>Battle Pass</h2><p id="acSub">Season 01 · European Theater</p></div></header>
+    <div id="acBody" class="bp-wrap"></div>
   </section>
 
   <!-- Classement des joueurs, profil public d'un joueur, notifications (src/09t-social.js) -->

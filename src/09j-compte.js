@@ -76,6 +76,7 @@ const AC_SILHOUETTE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 
 /* Avatar : la photo de profil du joueur (voir 09p-avatar.js), sinon une teinte tirée de son nom d'utilisateur et son initiale */
 function acctAvatar(user, level) {
   if (!user) return `<span>${AC_SILHOUETTE}</span>`;
+  if (user.avatarUrl) return `<img src="${esc(user.avatarUrl)}" alt="" draggable="false" loading="lazy">${level ? `<i>${level}</i>` : ''}`;
   if (user.avatar) return `<img src="/api/avatar?${user.other ? `u=${encodeURIComponent(user.username)}&` : ''}v=${user.avatar}" alt="" draggable="false" loading="lazy">${level ? `<i>${level}</i>` : ''}`;
   let h = 0; for (const c of String(user.username)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   const hue = h % 360;
@@ -88,15 +89,13 @@ function acctAvatarFallback(box, u, level) {
 }
 function acctChip() {
   const chip = $('acctChip'); if (!chip) return;
-  // pas encore de réponse du serveur (ou serveur injoignable) : le joueur déjà connecté sur cet appareil est reconnu d'après la mémoire de l'appareil
-  const h = !ACCT.user && ACCT.state !== 'ready' ? acctHint() : null, known = h && h.on ? { username: h.u, displayName: h.n, avatar: h.a } : null;
-  const u = ACCT.user || known, lv = ACCT.user ? (ACCT.level ? ACCT.level.level : 1) : known ? h.l : 0;
+  const u = ACCT.user, lv = ACCT.level ? ACCT.level.level : (typeof bpTier === 'function' ? bpTier() : 1);
   chip.classList.toggle('out', !u);
   $('acctAv').innerHTML = acctAvatar(u, lv);
   acctAvatarFallback($('acctAv'), u, lv);
-  $('acctName').textContent = u ? u.displayName : ACCT.state === 'off' ? _t('Profil') : _t('Se connecter');
-  $('acctSub').textContent = ACCT.user ? (ACCT.user.hasRecovery === false ? _t('Niveau {0} · créez votre code de secours', lv) : _t('Niveau {0} · voir mon profil', lv)) : known ? (ACCT.state === 'off' ? _t('Compte injoignable pour le moment') : _t('Connexion en cours...')) : ACCT.state === 'off' ? _t('Comptes indisponibles ici') : _t('Niveau, statistiques et multijoueur');
-  chip.setAttribute('aria-label', u ? `${_t('Profil de {0}, niveau {1}', u.displayName, lv)}` : _t('Se connecter'));
+  $('acctName').textContent = u ? u.displayName : 'Battle Pass';
+  $('acctSub').textContent = u ? 'Tier ' + lv + ' · Coastal ID' : 'Connect Coastal ID';
+  chip.setAttribute('aria-label', u ? 'Battle Pass for ' + u.displayName + ', tier ' + lv : 'Battle Pass, connect Coastal ID');
 }
 
 /* ---------- Multijoueur : compte obligatoire ---------- */
@@ -121,11 +120,15 @@ function acctWhenReady(fn) { (ACCT.ready || Promise.resolve()).then(fn); }
 /* ---------- Écran Profil ---------- */
 const AC_ERR = { 0: _t('Serveur injoignable : réessayez dans un instant.') };
 function acctRefreshScreen() {
+  bpRefreshScreen();
+  return;
   if (ACCT.noteSeen) { ACCT.note = ''; ACCT.noteSeen = false; } // une annonce du profil ne reste affichée qu'une visite
   if (ACCT.state === 'ready' && !ACCT.busy) acctLoad();
   acctRender();
 }
 function acctRender() {
+  bpRender();
+  return;
   const body = $('acBody'); if (!body) return;
   const sub = $('acSub');
   $('scr-profile').classList.toggle('ac-coding', !!ACCT.code); // écran du code : pas de bouton Retour (voir uiBack)
@@ -387,6 +390,8 @@ function acctRenderProfile(body, sub) {
 /* ---------- Suivi des parties ---------- */
 /* Ouverture : le serveur remet un jeton daté (il fixe la durée maximale que le résumé pourra annoncer) */
 function acctMatchStart() {
+  bpMatchStart();
+  return;
   ACCT.match = null;
   if (!ACCT.user) return;
   const m = { t0: MATCH.time, token: null, online: !!MATCH.online, map: CURMAP.id, mode: MATCH.mode };
@@ -395,6 +400,7 @@ function acctMatchStart() {
 }
 /* Fin (result : win, loss, draw ou quit) : envoie le résumé ; l'écran de fin affiche l'XP gagnée */
 async function acctMatchEnd(result, show) {
+  return bpMatchEnd(result, show);
   const m = ACCT.match; ACCT.match = null;
   const box = $('endXp');
   if (box) box.classList.add('hidden');
@@ -424,12 +430,14 @@ async function acctMatchEnd(result, show) {
   }
 }
 /* Retour aux menus en pleine partie : abandon (compté s'il a duré au moins 30 s) */
-function acctMatchAbandon() { if (ACCT.match) acctMatchEnd('quit', false); }
+function acctMatchAbandon() { bpMatchAbandon(); }
 
 /* ---------- Démarrage ---------- */
 /* Appelé par menuInit : l'état du compte se charge pendant que le jeu finit de démarrer ; la navigation qui en découle attend
    la fin du démarrage (acctArrive, appelé après l'ouverture du menu principal par boot, 09-game.js) */
 function acctInit() {
+  ACCT.ready = bpInit();
+  return;
   // liens reçus par e-mail avant la version 3.5 (confirmation d'adresse ?verif, mot de passe oublié ?mdp) : ils ne servent plus, le Profil le dit
   const qs = new URLSearchParams(location.search);
   ACCT.oldLink = qs.has('verif') || qs.has('mdp');
@@ -437,6 +445,7 @@ function acctInit() {
   ACCT.ready = acctLoad();
 }
 function acctArrive() {
+  return; // Coastal ID never forces account management over the main menu.
   const old = ACCT.oldLink; ACCT.oldLink = false;
   ACCT.ready.then(() => {
     if (ACCT.state !== 'ready') return;
